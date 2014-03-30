@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/scrollView1"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <EditText
+                    android:id="@+id/editLocationNameCategories_CategorySearch"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10" 
+                    android:hint="@string/locationNameCategories_CategorySearch.hint">
+
+                    <requestFocus />
+                </EditText>
+
+                <Button
+                    android:id="@+id/locationNameCategories_Save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="onClickLocationNameCategoriesSave"
+                    android:text="@string/locationNameCategories_Save" />
+
+            </LinearLayout>
+			<LinearLayout
+			    android:id="@+id/listLocationName_Categories"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:orientation="vertical" >
+            </LinearLayout>
+        </LinearLayout>
+
+    </ScrollView>

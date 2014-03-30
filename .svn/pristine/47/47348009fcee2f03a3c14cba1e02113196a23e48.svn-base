@@ -1,0 +1,72 @@
+package com.kajun258456357159.gps.task.layout.lists;
+
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.LinearLayout;
+
+import com.kajun258456357159.gps.task.services.DBHelper;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+
+public class LocationNameList extends LinearLayout implements OnClickListener{
+	private ArrayList<LocationVO> locationArrayList;
+	private ArrayList<LocationNameItem> locationNameList;
+	private static final String TAG = "LocationList";
+	private long _clickedItemId;
+	private DBHelper dbHelper;
+
+	public LocationNameList(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+		// TODO Auto-generated constructor stub
+	}
+	public LocationNameList(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		// TODO Auto-generated constructor stub
+	}
+	public LocationNameList(Context context) {
+		super(context);
+		Log.d(TAG, "LocationNameList started");
+		// TODO Auto-generated constructor stub
+    	locationArrayList = new ArrayList<LocationVO>();
+    	locationNameList = new ArrayList<LocationNameItem>();
+    	
+    	dbHelper = new DBHelper(context);
+    	locationArrayList = dbHelper.loadLocationNameList();
+    	
+    	//for loop to be add each task row to the task list
+    	for (int i = 0; i<locationArrayList.size(); i++){
+    		LocationNameItem locationNameItem = new LocationNameItem(context);
+    		locationNameItem.set_location(locationArrayList.get(i));
+    		locationNameItem.setOnClickListener(this);
+    		locationNameList.add(locationNameItem);
+    		this.setOrientation(VERTICAL);
+    		this.addView(locationNameList.get(locationNameList.size()-1));
+
+    		
+    	//end for loop
+    		
+    	}
+    	Log.d(TAG, "LocationNameList finished");
+	}
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+//		this.set_clickedItemId(Long.valueOf(v.getTag().toString()));
+		LocationNameItem item = (LocationNameItem) v;
+		this.setTag(item.get_clickedView());
+		this.set_clickedItemId(item.get_location().get_id());
+		this.performClick();
+	}
+
+	public long get_clickedItemId() {
+		return _clickedItemId;
+	}
+	public void set_clickedItemId(long clickedItemId) {
+		this._clickedItemId = clickedItemId;
+	}
+	
+
+}

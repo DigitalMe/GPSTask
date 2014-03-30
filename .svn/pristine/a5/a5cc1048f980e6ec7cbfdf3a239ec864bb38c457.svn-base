@@ -1,0 +1,170 @@
+package com.kajun258456357159.gps.task.layout.lists;
+
+import java.util.ArrayList;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.kajun258456357159.gps.task.EditTasks;
+import com.kajun258456357159.gps.task.LocationView;
+import com.kajun258456357159.gps.task.R;
+import com.kajun258456357159.gps.task.TaskList;
+import com.kajun258456357159.gps.task.services.DBHelper;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+public class TaskItem  extends LinearLayout implements OnClickListener, LocationListener{
+	private TaskVO _task;
+	private LinearLayout taskRow;
+	private CheckBox checkBoxTaskComplete;
+	private TextView textTaskName;
+	private TextView textTaskDistance;
+	private String[] priorityColors;
+	private int minDistanceForUpdate;
+	private LocationManager locationManager;
+	private LocationVO gpsLocation;
+	private ArrayList<LocationVO> taskLocationList;
+	private DBHelper dbHelper;
+	private Context _context;
+	
+	@SuppressWarnings("static-access")
+	public TaskItem(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+		set_context(context);
+		priorityColors = getResources().getStringArray(R.array.priorityColors);
+		locationManager = (LocationManager)this.getContext().getSystemService(this.getContext().LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Long.valueOf(1000), Float.valueOf(10), this);
+		taskLocationList = new ArrayList<LocationVO>();
+		dbHelper = new DBHelper(this.getContext());
+		gpsLocation = new LocationVO();
+	}
+
+	public void onDestroy(){
+		locationManager.removeUpdates(this);
+	}
+	
+	public LinearLayout get_taskItem(Context context){
+		
+		this.setClickable(Boolean.TRUE);
+		this.addView(taskRow);
+		return this;
+	}
+	
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+	
+	}
+
+	public TaskVO get_Task() {
+		return _task;
+	}
+
+	public void set_Task(TaskVO task, ViewGroup parent) {
+		this._task = task;
+    	taskRow = (LinearLayout) LayoutInflater.from(get_context()).inflate(R.layout.task_row, parent, false);
+		checkBoxTaskComplete = (CheckBox) taskRow.findViewById(R.id.checkboxTaskComplete);
+		textTaskName = (TextView) taskRow.findViewById(R.id.textRowTaskName);
+		textTaskDistance = (TextView)taskRow.findViewById(R.id.textTaskDistance);
+		
+		checkBoxTaskComplete.setChecked(task.is_isComplete());
+		checkBoxTaskComplete.setId(Integer.valueOf(Long.toString(task.get_id())));
+
+    	textTaskName.setText(task.get_taskName().get_name().toString());
+    	textTaskName.setTextColor(Color.parseColor(priorityColors[task.get_priority()]));
+    	textTaskName.setId(Integer.valueOf(Long.toString(task.get_id())));
+    	
+
+    	textTaskDistance.setClickable(Boolean.TRUE);
+		taskLocationList = dbHelper.loadTaskLocations(task.get_category().get_id());
+
+	}
+	
+    public void onClickTaskName(View v) {
+		Intent intent = new Intent(this.getContext(), EditTasks.class);
+		intent.putExtra(TaskList.TASKLIST + TaskList.NAME, "");
+		intent.putExtra(TaskList.TASKLIST + TaskList.ID, Long.valueOf(v.getId()));
+		intent.putExtra(TaskList.TASKLIST + TaskList.ISNEW, Boolean.FALSE);
+		this.getContext().startActivity(intent);
+    }
+
+    public void onClickTaskDistance(View v) {
+		if (Long.valueOf(v.getId())==0){
+    	//bring to screen to notify user there are no location with this category
+			Toast.makeText(this.getContext(), "No locations for this task", Toast.LENGTH_SHORT).show();
+		} else {
+			//show location info
+	    	Intent intent = new Intent(this.getContext(), LocationView.class);
+	    	intent.putExtra(LocationView.LOCATIONVIEW + LocationView.CATEGORYID, Long.valueOf(v.getId()));
+	    	this.getContext().startActivity(intent);
+		}
+    }
+    
+	public void onLocationChanged(Location location) {
+		// TODO Auto-generated method stub
+		if (minDistanceForUpdate < gpsLocation.get_coordinate().getDistance(location.getLatitude(), location.getLongitude())){
+			gpsLocation.set_coordinate(location.getLatitude(), location.getLongitude());
+	    	if(gpsLocation.get_coordinate().get_lattitude()+gpsLocation.get_coordinate().get_longitude()!=0){
+	        	if(taskLocationList.size() > 0){
+	        		int closestLocationIndex=0;
+	        		Float closestDistance=Float.valueOf(9999999);
+	        		Float locationDistance;
+	        		for(int x=0; x < taskLocationList.size(); x++){
+	        			locationDistance = taskLocationList.get(x).get_coordinate().getDistance(gpsLocation.get_coordinate().get_lattitude(), gpsLocation.get_coordinate().get_longitude());
+	        			if(closestDistance>locationDistance){
+	        				closestDistance=locationDistance;
+	        				closestLocationIndex=x;
+	        			}
+	        		}
+	        		String distance = String.format("%.1f", taskLocationList.get(closestLocationIndex).get_coordinate().getDistance(gpsLocation.get_coordinate().get_lattitude(), gpsLocation.get_coordinate().get_longitude())/1000);
+	            	textTaskDistance.setText(distance+"km");
+	            	textTaskDistance.setId(Integer.valueOf(String.valueOf(get_Task().get_category().get_id())));
+	        	}
+	    	}
+		}
+	}
+
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getMinDistanceForUpdate() {
+		return minDistanceForUpdate;
+	}
+
+	public void setMinDistanceForUpdate(int minDistanceForUpdate) {
+		this.minDistanceForUpdate = minDistanceForUpdate;
+	}
+
+	public Context get_context() {
+		return _context;
+	}
+
+	public void set_context(Context _context) {
+		this._context = _context;
+	}
+}

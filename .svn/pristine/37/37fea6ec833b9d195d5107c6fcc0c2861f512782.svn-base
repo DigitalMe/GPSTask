@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/locationNameListRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <TextView
+        android:id="@+id/textLocationName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+		android:padding="8dp"
+		android:textSize="15sp"
+	    android:clickable="true"
+		android:onClick="onClickLocationName"
+        />
+
+    <ImageButton
+        android:id="@+id/locationEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="onClickLocationEdit"
+        android:layout_toLeftOf="@+id/locationCategoryEdit"
+        android:src="@android:drawable/ic_dialog_map" />
+
+    <ImageButton
+        android:id="@+id/locationCategoryEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:onClick="onClickLocationCategoryEdit"
+        android:src="@android:drawable/ic_menu_agenda" />
+    
+</RelativeLayout>

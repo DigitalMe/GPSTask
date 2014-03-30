@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.kajun258456357159.gps.task"
+    android:versionCode="1"
+    android:versionName="1.0" >
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-sdk
+        android:minSdkVersion="11"
+        android:targetSdkVersion="17" />
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme"
+        android:name=".GpsTaskApplication">
+        <activity
+            android:name="com.kajun258456357159.gps.task.TaskList"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_main" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.EditTasks"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_edit_tasks"
+            android:parentActivityName="com.kajun258456357159.gps.task.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.SelectCategory"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_select_category"
+            android:parentActivityName="com.kajun258456357159.gps.task.EditTasks" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.EditTasks" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.EditCategories"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_edit_category"
+            android:parentActivityName="com.kajun258456357159.gps.task.EditTasks" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.SelectCategory" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.LocationView"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_location_view"
+            android:parentActivityName="com.kajun258456357159.gps.task.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.EditLocationNames"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_location_Name_List"
+            android:parentActivityName="com.kajun258456357159.gps.task.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.EditLocationNameCategories"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_edit_location_name_categories"
+            android:parentActivityName="com.kajun258456357159.gps.task.LocationView" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.LocationView" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.SelectLocationName"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_select_location_name"
+            android:parentActivityName="com.kajun258456357159.gps.task.LocationView" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.LocationView" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.EditLocations"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_edit_location"
+            android:parentActivityName="com.kajun258456357159.gps.task.LocationView" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.LocationView" />
+        </activity>
+        <activity
+            android:name="com.kajun258456357159.gps.task.LoadPOI"
+            android:windowSoftInputMode="stateHidden"
+            android:label="@string/title_activity_edit_location"
+            android:parentActivityName="com.kajun258456357159.gps.task.LocationView" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.kajun258456357159.gps.task.LocationView" />
+        </activity>
+        
+  	</application>
+
+</manifest>

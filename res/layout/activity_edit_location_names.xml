@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical" >
+
+		<LinearLayout
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="horizontal">
+
+		    <EditText
+		        android:id="@+id/editLocationNames_LocationName"
+		        android:layout_width="0dp"
+		        android:layout_height="wrap_content"
+		        android:layout_weight="1"
+		        android:hint="@string/listLocationNames.locationName.hint" />
+   		    
+   		    <ImageButton
+		        android:id="@+id/imageButton1"
+		        android:layout_gravity="center"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:src="@android:drawable/ic_delete" />
+
+		    <Button
+		        android:id="@+id/editLocationNames.SaveLocationName"
+		        android:layout_gravity="center"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:onClick="onClickSaveLocationName"
+		        android:text="@string/listLocationNames_SaveLocation" />
+   		    
+   		    
+   		    
+		</LinearLayout>
+		<LinearLayout
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="horizontal">
+
+			<CheckBox
+			    android:id="@+id/editLocationNames_IsPrivate"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/editLocationNames_IsPrivate" />
+
+			<CheckBox
+			    android:id="@+id/editLocationNames_IsBoycotted"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:text="@string/editLocationNames_IsBoycotted" />
+					    
+		</LinearLayout>
+		<LinearLayout
+		    android:id="@+id/listSelectLocationName"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="vertical">
+
+				
+			    
+		</LinearLayout>
+	    
+	</LinearLayout>
+</ScrollView>

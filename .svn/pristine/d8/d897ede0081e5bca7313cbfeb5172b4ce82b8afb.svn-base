@@ -1,0 +1,43 @@
+package com.kajun258456357159.gps.task.vo;
+
+public class CategoryVO {
+
+	private long _id = 0;
+	private String _name = "";
+	private boolean _isDeleted = Boolean.FALSE;
+	
+	//Constructor
+	public CategoryVO(long id, String name, boolean isDeleted){
+		set_id(id);
+		set_name(name);
+		set_isDeleted(isDeleted);
+	}
+	public CategoryVO(){
+		
+	}
+		
+
+	public long get_id() {
+		return _id;
+	}
+
+	public void set_id(long _id) {
+		this._id = _id;
+	}
+
+	public String get_name() {
+		return _name;
+	}
+
+	public void set_name(String _name) {
+		this._name = _name;
+	}
+
+	public boolean is_isDeleted() {
+		return _isDeleted;
+	}
+
+	public void set_isDeleted(boolean _isDeleted) {
+		this._isDeleted = _isDeleted;
+	}
+}

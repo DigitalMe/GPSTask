@@ -1,0 +1,386 @@
+package com.kajun258456357159.gps.task.model;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+
+import android.content.Context;
+import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+
+import com.kajun258456357159.gps.task.vo.CategoryVO;
+import com.kajun258456357159.gps.task.vo.LocationCategoryVO;
+import com.kajun258456357159.gps.task.vo.LocationNameVO;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+import com.kajun258456357159.gps.task.vo.TaskNameVO;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+public final class DataModel implements LocationListener{
+	private static DataModel inst;
+	
+	public static final String GPS_FIX = "com.kajun258456357159.gps.task.model.GPS_FIX";
+	public static final String DB_LOADED = "com.kajun258456357159.gps.task.model.DB_LOADED";
+	static final String TAG = "DbHelper";
+	private DbHelper dbHelper;
+	private ArrayList<CategoryVO> categoryTable;
+	private ArrayList<LocationCategoryVO> locationCategoryTable;
+	private ArrayList<LocationNameVO> locationNameTable;
+	private ArrayList<LocationVO> locationTable;
+	private ArrayList<TaskNameVO> taskNameTable;
+	private ArrayList<TaskVO> taskTable;
+	private ArrayList<LocationCategoryVO> locationCategoryList;
+	private ArrayList<LocationVO> locationList;
+	private ArrayList<TaskVO> taskList;
+	private LocationManager locationManager;
+	private static Location location;
+	private static Boolean isGpsFixed;
+	private static Boolean isDbLoaded;
+	Context context;
+	
+	
+	
+	//Constructor
+	private DataModel(){
+		
+	}
+	
+	public void init(Context context){
+		setIsGpsFixed(Boolean.FALSE);
+		setIsDbLoaded(Boolean.FALSE);
+		this.context = context;
+		dbHelper = new DbHelper(context);
+		refreshData();
+		locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Long.valueOf(1000), 10, this);
+	}
+	
+	public static DataModel getInstance() {
+		if(inst == null)
+		{
+			inst = new DataModel();
+		}
+		return inst;
+	}
+
+	public void refreshData(){
+		setTaskTable(dbHelper.loadTable(new TaskVO()));
+		setTaskNameTable(dbHelper.loadTable(new TaskNameVO()));
+		setTaskList(generateTaskList());
+		new loadTables().execute();
+	}
+	
+	public void completeTask(TaskVO task){
+		ArrayList<TaskVO> taskList = getTaskList();
+		for(int i =0; i<taskList.size();i++){
+			if(taskList.get(i).get_id()==task.get_id()){
+				taskList.get(i).set_isComplete(task.is_isComplete());
+				taskList.get(i).set_completionDate(Calendar.getInstance().getTime());
+//				setTaskList(taskList);
+				saveTask(taskList.get(i));
+				i=taskList.size();
+			}
+		}
+	}
+	
+	public void saveTask(TaskVO task){
+		dbHelper.writeRecord(task);
+	}
+	
+	public ArrayList<LocationCategoryVO> generateTaskLocationCategoryList(ArrayList<TaskVO> taskList){
+		ArrayList<LocationCategoryVO> rawLocationCategoryList = getLocationCategoryTable();
+		ArrayList<LocationCategoryVO> locationCategoryList = new ArrayList<LocationCategoryVO>();
+		//build the list of categories used in the todo list
+		for(int i =0; i<taskList.size(); i++)
+		{
+			for(int j = 0; j<rawLocationCategoryList.size(); j++)
+			{
+				if(taskList.get(i).get_taskName().get_categoryId()==rawLocationCategoryList.get(j).get_categoryId())
+				{
+					Boolean isInList = Boolean.FALSE;
+					for (int k = 0; k<locationCategoryList.size(); k++)
+					{
+						if (locationCategoryList.get(k).get_id() == rawLocationCategoryList.get(j).get_id())
+						{
+							isInList = Boolean.TRUE;
+							break;
+						}
+					}
+					//if the categoryLocation is not already in the list then add it.
+					if(!isInList)
+					{
+						locationCategoryList.add(rawLocationCategoryList.get(j));	
+					}
+				}
+			}
+		}
+		return locationCategoryList;
+	}
+	
+	public ArrayList<LocationVO> generateTaskLocationList(ArrayList<LocationCategoryVO> locationCategoryList){
+		ArrayList<LocationVO> rawLocationList = getLocationTable();
+		ArrayList<LocationVO> locationList = new ArrayList<LocationVO>();
+		//populate the array with only locations that have a task in the to do list
+		for(int i = 0; i<locationCategoryList.size(); i++)
+		{
+			for(int j = 0;j<rawLocationList.size(); j++)
+			{
+				if(locationCategoryList.get(i).get_locationNameId()==rawLocationList.get(j).get_locationName().get_id())
+				{
+					locationList.add(rawLocationList.get(j));
+					locationList.get(locationList.size()-1).set_categoryId(locationCategoryList.get(i).get_categoryId());
+					locationList.get(locationList.size()-1).get_locationName().set_id(locationCategoryList.get(i).get_locationNameId());
+				}
+			}
+		}
+		//sort the list for closest locations first
+		Collections.sort(locationList, new LocationVO());
+		//return the fist 30 entries for each category
+		int[] locationCategoryCount = new int[locationCategoryList.size()];
+		for(int i = 0; i < locationList.size(); i++)
+		{
+			for(int j = 0; j < locationCategoryList.size(); j++)
+			{
+				if (locationList.get(i).get_categoryId() == locationCategoryList.get(j).get_categoryId())
+				{
+					locationCategoryCount[j]++;
+					if(30<locationCategoryCount[j])
+					{
+						locationList.remove(i);
+						i--;
+					}
+					break;
+				}
+			}
+		}
+		//trim the array to get rid of dead spaces
+		locationList.trimToSize();
+		//add the location name to each entry
+		ArrayList<LocationNameVO> locationNames = getLocationNameTable();
+		for(int i = 0; i < locationList.size(); i++)
+		{
+			for(int j = 0; j < locationNames.size(); j++)
+			{
+				if (locationList.get(i).get_locationName().get_id() == locationNames.get(j).get_id())
+				{
+					locationList.get(i).set_locationName(locationNames.get(j));
+					break;
+				}
+			}
+		}
+		return locationList;
+	}
+	
+	
+	public ArrayList<TaskVO> generateTaskList(){
+		ArrayList<TaskVO> rawTaskList = getTaskTable();
+		
+		ArrayList<TaskNameVO> rawTaskNameList = getTaskNameTable();
+		
+		ArrayList<TaskVO> taskList = new ArrayList<TaskVO>();
+		for(int i =0; i<rawTaskList.size(); i++){
+			//check to see if the task has been marked completed by boolean original day or if the completion date is prior to today
+			//changing this > to >= would clear todays tasks too
+			//may need a null check on get_completionDate()
+//			if((rawTaskList.get(i).is_isComplete()) | (0>rawTaskList.get(i).get_completionDate().compareTo(Calendar.getInstance().getTime()))){
+			if(rawTaskList.get(i).is_isComplete()){
+			} else {
+				taskList.add(rawTaskList.get(i));
+				//search taskNameList and find the ID for the taskName.
+				for (int j =0; j<rawTaskNameList.size();j++){
+					//find the taskName and adding it to the last task added
+					if(taskList.get(taskList.size()-1).get_taskName().get_id() == rawTaskNameList.get(j).get_id()){
+						taskList.get(taskList.size()-1).set_taskName(rawTaskNameList.get(j));
+						break;
+					}
+				}
+			} //close if((rawTaskList.get(i).is_isComplete()) | (0>rawTaskList.get(i).get_completionDate().compareTo(Calendar.getInstance().getTime())))
+		}//close for(int i =0; i<rawTaskList.size(); i++)
+		return taskList;
+	}
+	
+	public ArrayList<CategoryVO> getCategoryTable() {
+		return categoryTable;
+	}
+
+	private void setCategoryTable(ArrayList<CategoryVO> categoryTable) {
+		this.categoryTable = categoryTable;
+	}
+
+	public ArrayList<LocationCategoryVO> getLocationCategoryTable() {
+		return locationCategoryTable;
+	}
+
+	private void setLocationCategoryTable(ArrayList<LocationCategoryVO> locationCategoryTable) {
+		this.locationCategoryTable = locationCategoryTable;
+	}
+
+	public ArrayList<LocationNameVO> getLocationNameTable() {
+		return locationNameTable;
+	}
+
+	private void setLocationNameTable(ArrayList<LocationNameVO> locationNameTable) {
+		this.locationNameTable = locationNameTable;
+	}
+
+	public ArrayList<LocationVO> getLocationTable() {
+		return locationTable;
+	}
+
+	private void setLocationTable(ArrayList<LocationVO> locationTable) {
+		this.locationTable = locationTable;
+	}
+
+	public ArrayList<TaskNameVO> getTaskNameTable() {
+		return taskNameTable;
+	}
+
+	private void setTaskNameTable(ArrayList<TaskNameVO> taskNameTable) {
+		this.taskNameTable = taskNameTable;
+	}
+
+	public ArrayList<TaskVO> getTaskTable() {
+		return taskTable;
+	}
+
+	private void setTaskTable(ArrayList<TaskVO> taskTable) {
+		this.taskTable = taskTable;
+	}
+
+	public ArrayList<LocationVO> getLocationList() {
+		return locationList;
+	}
+
+	private void setLocationList(ArrayList<LocationVO> locationList) {
+		this.locationList = locationList;
+	}
+
+	public ArrayList<LocationCategoryVO> getLocationCategoryList() {
+		return locationCategoryList;
+	}
+
+	private void setLocationCategoryList(ArrayList<LocationCategoryVO> locationCategoryList) {
+		this.locationCategoryList = locationCategoryList;
+	}
+
+	public ArrayList<TaskVO> getTaskList() {
+		return taskList;
+	}
+
+	private void setTaskList(ArrayList<TaskVO> taskList) {
+		this.taskList = taskList;
+	}
+
+	private class loadTables extends AsyncTask<String, Integer, String>{
+
+		@Override
+		protected void onPreExecute(){
+			super.onPreExecute();
+			setIsDbLoaded(Boolean.FALSE);
+		}
+		
+		@Override
+		protected String doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			setCategoryTable(dbHelper.loadTable(new CategoryVO()));
+			setLocationCategoryTable(dbHelper.loadTable(new LocationCategoryVO()));
+			setLocationNameTable(dbHelper.loadTable(new LocationNameVO()));
+			setLocationTable(dbHelper.loadTable(new LocationVO()));
+			return null;
+		}
+		
+		protected void onPostExecute(String result){
+			super.onPostExecute(result);
+//			setIsDbLoaded(Boolean.TRUE);
+//			Intent sendDbLoaded = new Intent();
+//			sendDbLoaded.setAction(DB_LOADED);
+//			context.sendBroadcast(sendDbLoaded);
+		}
+		
+	}
+
+	private class generateTaskLocationList extends AsyncTask<String, Integer, String>{
+
+		@Override
+		protected void onPreExecute(){
+			super.onPreExecute();
+			setIsDbLoaded(Boolean.FALSE);
+		}
+		
+		@Override
+		protected String doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			setLocationCategoryList(generateTaskLocationCategoryList(taskList));
+			setLocationList(generateTaskLocationList(getLocationCategoryList()));
+			return null;
+		}
+		
+		protected void onPostExecute(String result){
+			super.onPostExecute(result);
+			setIsDbLoaded(Boolean.TRUE);
+			Intent sendDbLoaded = new Intent();
+			sendDbLoaded.setAction(DB_LOADED);
+			context.sendBroadcast(sendDbLoaded);
+		}
+		
+	}
+
+	
+	@Override
+	public void onLocationChanged(Location location) {
+		// TODO Auto-generated method stub
+		setLocation(location);
+		new generateTaskLocationList().execute();
+		setIsGpsFixed(Boolean.TRUE);
+		Intent sendGpsFix = new Intent();
+		sendGpsFix.setAction(GPS_FIX);
+		context.sendBroadcast(sendGpsFix);
+
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public static Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		DataModel.location = location;
+	}
+
+	public static Boolean getIsGpsFixed() {
+		return isGpsFixed;
+	}
+
+	private static void setIsGpsFixed(Boolean isGpsFixed) {
+		DataModel.isGpsFixed = isGpsFixed;
+	}
+
+	public static Boolean getIsDbLoaded() {
+		return isDbLoaded;
+	}
+
+	private static void setIsDbLoaded(Boolean isDbLoaded) {
+		DataModel.isDbLoaded = isDbLoaded;
+	}
+
+}

@@ -1,0 +1,107 @@
+package com.kajun258456357159.gps.task.layout.lists;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.kajun258456357159.gps.task.EditTasks;
+import com.kajun258456357159.gps.task.LocationView;
+import com.kajun258456357159.gps.task.R;
+import com.kajun258456357159.gps.task.TaskList;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+public class TaskItem  extends LinearLayout implements OnClickListener{
+	private TaskVO _task;
+	private LinearLayout taskRow;
+	private CheckBox checkBoxTaskComplete;
+	private TextView textTaskName;
+	private TextView textTaskDistance;
+	private String[] priorityColors;
+	private Context _context;
+	
+	public TaskItem(Context context) {
+		super(context);
+		// TODO Auto-generated constructor stub
+		set_context(context);
+		priorityColors = getResources().getStringArray(R.array.priorityColors);
+	}
+
+	public LinearLayout get_taskItem(Context context){
+		this.setClickable(Boolean.TRUE);
+		this.addView(taskRow);
+		return this;
+	}
+	
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+	
+	}
+
+	public TaskVO get_Task() {
+		return _task;
+	}
+
+	public void set_Task(TaskVO task, ViewGroup parent) {
+		this._task = task;
+    	taskRow = (LinearLayout) LayoutInflater.from(get_context()).inflate(R.layout.task_row, parent, false);
+		checkBoxTaskComplete = (CheckBox) taskRow.findViewById(R.id.checkboxTaskComplete);
+		textTaskName = (TextView) taskRow.findViewById(R.id.textRowTaskName);
+		textTaskDistance = (TextView)taskRow.findViewById(R.id.textTaskDistance);
+		
+		checkBoxTaskComplete.setChecked(task.is_isComplete());
+		checkBoxTaskComplete.setId(Integer.valueOf(Long.toString(task.get_id())));
+
+		if(task.get_taskName().get_name()!=null){
+			textTaskName.setText(task.get_taskName().get_name().toString());
+		}
+    	textTaskName.setTextColor(Color.parseColor(priorityColors[task.get_priority()]));
+    	textTaskName.setId(Integer.valueOf(Long.toString(task.get_id())));
+
+    	textTaskDistance.setClickable(Boolean.TRUE);
+	}
+	
+	public void set_TaskDistance(float distance, long categoryId)
+	{
+    	textTaskDistance.setText(distance + "km");
+		textTaskDistance.setId(Integer.valueOf(Long.toString(categoryId)));
+	}
+	
+    public void onClickTaskName(View v) {
+		Intent intent = new Intent(this.getContext(), EditTasks.class);
+		intent.putExtra(TaskList.TASKLIST + TaskList.NAME, "");
+		intent.putExtra(TaskList.TASKLIST + TaskList.ID, Long.valueOf(v.getId()));
+		intent.putExtra(TaskList.TASKLIST + TaskList.ISNEW, Boolean.FALSE);
+		this.getContext().startActivity(intent);
+    }
+
+    public void onClickTaskDistance(View v) {
+		if (Long.valueOf(v.getId())==0){
+    	//bring to screen to notify user there are no location with this category
+			Toast.makeText(this.getContext(), "No locations for this task", Toast.LENGTH_SHORT).show();
+		} else {
+			//show location info
+	    	Intent intent = new Intent(this.getContext(), LocationView.class);
+	    	intent.putExtra(LocationView.LOCATIONVIEW + LocationView.CATEGORYID, Long.valueOf(v.getId()));
+	    	this.getContext().startActivity(intent);
+		}
+    }
+    
+
+	public Context get_context() {
+		return _context;
+	}
+
+	public void set_context(Context _context) {
+		this._context = _context;
+	}
+	
+
+}

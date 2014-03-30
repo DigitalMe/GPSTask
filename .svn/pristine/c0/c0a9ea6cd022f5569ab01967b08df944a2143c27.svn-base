@@ -1,0 +1,124 @@
+package com.kajun258456357159.gps.task.vo;
+
+public class TaskVO {
+	private long _id;
+	private int _priority;
+	private long _parentId;
+	private DateTimeVO _startDateTime;
+	private DateTimeVO _endDateTime;
+	private LocationVO _location;
+	private long _parentTaskId;
+	private boolean _isComplete;
+	private TaskNameVO _taskName;
+	private CategoryVO _category;
+
+	
+	//Constructor
+	public TaskVO(long id, int priority, long parentId, DateTimeVO startDateTime, DateTimeVO endDateTime, LocationVO location, long parentTaskId, boolean isComplete, TaskNameVO taskName, CategoryVO category){
+		set_id(id);
+		set_priority(priority);
+		set_parentId(parentId);
+		set_startDateTime(startDateTime);
+		set_endDateTime(endDateTime);
+		set_location(location);
+		set_isComplete(isComplete);
+		set_taskName(taskName);
+		set_category(category);
+	}
+	
+	public TaskVO(){
+		set_id(0);
+		set_priority(0);
+		DateTimeVO startDateTime = new DateTimeVO();
+		set_startDateTime(startDateTime);
+		DateTimeVO endDateTime = new DateTimeVO();
+		set_endDateTime(endDateTime);
+		LocationVO location = new LocationVO();
+		set_location(location);
+		set_isComplete(Boolean.FALSE);
+		TaskNameVO taskName = new TaskNameVO();
+		set_taskName(taskName);
+		CategoryVO category = new CategoryVO();
+		set_category(category);
+	}
+	
+	public long get_id() {
+		return _id;
+	}
+
+	public void set_id(long _id) {
+		this._id = _id;
+	}
+
+	public int get_priority() {
+		return _priority;
+	}
+
+	public void set_priority(int _priority) {
+		this._priority = _priority;
+	}
+
+	public DateTimeVO get_startDateTime() {
+		return _startDateTime;
+	}
+
+	public void set_startDateTime(DateTimeVO _startDateTime) {
+		this._startDateTime = _startDateTime;
+	}
+
+	public DateTimeVO get_endDateTime() {
+		return _endDateTime;
+	}
+
+	public void set_endDateTime(DateTimeVO _endDateTime) {
+		this._endDateTime = _endDateTime;
+	}
+
+	public LocationVO get_location() {
+		return _location;
+	}
+
+	public void set_location(LocationVO _location) {
+		this._location = _location;
+	}
+
+	public long get_parentTaskId() {
+		return _parentTaskId;
+	}
+
+	public void set_parentTaskId(long _parentTaskId) {
+		this._parentTaskId = _parentTaskId;
+	}
+
+	public boolean is_isComplete() {
+		return _isComplete;
+	}
+
+	public void set_isComplete(boolean _isComplete) {
+		this._isComplete = _isComplete;
+	}
+
+	public TaskNameVO get_taskName() {
+		return _taskName;
+	}
+
+	public void set_taskName(TaskNameVO _taskName) {
+		this._taskName = _taskName;
+	}
+
+	public CategoryVO get_category() {
+		return _category;
+	}
+
+	public void set_category(CategoryVO _category) {
+		this._category = _category;
+	}
+
+	public long get_parentId() {
+		return _parentId;
+	}
+
+	public void set_parentId(long _parentId) {
+		this._parentId = _parentId;
+	}
+}

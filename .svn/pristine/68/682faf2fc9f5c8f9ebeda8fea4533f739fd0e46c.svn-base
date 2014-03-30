@@ -1,0 +1,72 @@
+package com.kajun258456357159.gps.task;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+
+import com.kajun258456357159.gps.task.layout.lists.CategoryList;
+import com.kajun258456357159.gps.task.services.DBHelper;
+import com.kajun258456357159.gps.task.vo.CategoryVO;
+
+public class SelectCategory extends Activity implements OnClickListener {
+	static final String TAG = "SelectCategory";
+	public final static String SELECTCATEGORY = "com.kajun258456357159.gps.task.SELECTCATEGORY";
+	public final static String ID = ".ID";
+	private EditText categoryName; 
+	DBHelper dbHelper;
+	CategoryVO category;
+	CategoryList categoryList;
+
+
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate started");
+		setContentView(R.layout.activity_select_categories);
+		
+		dbHelper = new DBHelper(this);
+		category = new CategoryVO();
+		categoryName = (EditText)findViewById(R.id.selectCategory_CategoryName);
+		categoryName.setText(category.get_name());
+
+		//This builds the list of categories
+		LinearLayout layoutCategoryList = (LinearLayout)findViewById(R.id.listSelectCategory);
+		layoutCategoryList.removeAllViews();
+		categoryList = new CategoryList(this);
+		categoryList.set_isMultiselect(Boolean.FALSE);
+		categoryList.set_categoryArrayList(dbHelper.loadCategoryList(DBHelper.LOAD_ALL_CATEGORIES));
+		categoryList.setClickable(Boolean.TRUE);
+		categoryList.setOnClickListener(this);
+		layoutCategoryList.addView(categoryList.get_categoryList(this));
+
+		//TODO find out why this dosent work
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		Log.d(TAG, "onCreate finished");
+	}
+	
+	public void onClickEditCategory (View view) {
+		Log.d(TAG, "onClickEditTask started");
+		Intent intent = new Intent(this, EditCategories.class);
+		startActivity(intent);
+		Log.d(TAG, "onClickEditTask finished");
+	}
+
+	
+	
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		CategoryList categoryList = (CategoryList) v;
+		//this, EditTasks.class
+		Intent intent = new Intent();
+		intent.putExtra(EditTasks.EDITTASK + EditTasks.CATEGORYID, categoryList.get_clickedItemId());
+		setResult(RESULT_OK, intent);
+
+		//TODO send category back to the edit task activity
+		
+		this.finish();
+	}
+}

@@ -1,0 +1,15 @@
+package com.kajun258456357159.gps.task.model;
+
+import java.util.Arrays;
+import java.util.Comparator;
+
+import android.location.Location;
+
+import com.kajun258456357159.gps.task.vo.LocationVO;
+
+public class Sort<T> {
+	public void sortNearby(LocationVO location){
+//        Arrays.sort(location);
+
+    }
+}

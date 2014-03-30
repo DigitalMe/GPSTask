@@ -1,0 +1,36 @@
+package com.kajun258456357159.gps.task.vo;
+
+public class DateTimeVO {
+	private String _date;
+	private String _time;
+
+	
+	//Constructor
+		public DateTimeVO(String date, String time){
+			set_date(date);
+			set_time(time);
+		}
+
+		public DateTimeVO(){
+			
+		}
+
+		public String get_date() {
+			return _date;
+		}
+
+
+		public void set_date(String _date) {
+			this._date = _date;
+		}
+
+
+		public String get_time() {
+			return _time;
+		}
+
+
+		public void set_time(String _time) {
+			this._time = _time;
+		}
+}

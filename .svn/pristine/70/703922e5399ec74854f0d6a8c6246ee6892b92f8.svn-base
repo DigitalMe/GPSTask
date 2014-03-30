@@ -1,0 +1,171 @@
+package com.kajun258456357159.gps.task.vo;
+
+import java.util.Locale;
+
+import android.location.Address;
+
+public class LocationVO {
+	private long _id;
+	private CoordinateVO _coordinate;
+	private long _categoryId;
+	private boolean _ignore;
+	private boolean _isDeleted;
+	private long _nameId;
+	private String _name;
+	private Address _address;
+	private boolean _nameIgnore;
+	private boolean _nameIsDeleted;
+	private boolean _nameIsPrivate;
+	
+	
+	//Constructor
+		public LocationVO(long id, CoordinateVO coordinate, long categoryId, boolean ignore, boolean isDeleted, long nameId, String name, Address address, boolean nameIgnore, boolean nameIsDeleted){
+			set_id(id);
+			set_coordinate(coordinate);
+			set_categoryId(categoryId);
+			set_ignore(ignore);
+			set_isDeleted(isDeleted);
+			set_nameId(nameId);
+			set_name(name);
+			set_address(address);
+			set_nameIgnore(nameIgnore);
+			set_nameIsDeleted(nameIsDeleted);
+		}
+		
+		public LocationVO(){
+			set_id(-1);
+			set_nameId(-1);
+			CoordinateVO coordinate = new CoordinateVO();
+			set_coordinate(coordinate);
+			Address address = new Address(Locale.CANADA);
+			set_address(address);
+			
+		}
+		
+		
+        public int compare(LocationVO location1, LocationVO location2) {
+
+        	LocationVO currentLocation = new LocationVO();
+            double lat1 = location1.get_coordinate().get_lattitude();
+            double lng1 = location1.get_coordinate().get_longitude();
+
+            double lat2 = location2.get_coordinate().get_lattitude();
+            double lng2 = location2.get_coordinate().get_longitude();
+
+            double location1Distance = currentLocation.get_coordinate().getDistance(lat1,lng1);
+            double location2Distance = currentLocation.get_coordinate().getDistance(lat2,lng2);
+            if (location1Distance < location2Distance) 
+                return -1;
+            else if (location1Distance > location2Distance) 
+                return 1;
+            else return 0;
+        }
+        
+
+
+        
+        
+//		public boolean equals(LocationVO otherLocation)
+//		{
+//			return (otherLocation._id == _id && otherLocation.lattitude == latitude && otherLocation.longitude == longitude);
+//			return true;
+//		}
+		public long get_id() {
+			return _id;
+		}
+
+		public void set_id(long _id) {
+			this._id = _id;
+		}
+
+		public long get_nameId() {
+			return _nameId;
+		}
+
+		public void set_nameId(long _nameId) {
+			this._nameId = _nameId;
+		}
+
+		public String get_name() {
+			return _name;
+		}
+
+		public void set_name(String _name) {
+			this._name = _name;
+		}
+
+		public CoordinateVO get_coordinate() {
+			return _coordinate;
+		}
+
+		public void set_coordinate(CoordinateVO _coordinate) {
+			this._coordinate = _coordinate;
+		}
+		public void set_coordinate(double lattitude, double longitude){
+			this._coordinate.set_lattitude(lattitude);
+			this._coordinate.set_longitude(longitude);
+		}
+
+		public boolean is_ignore() {
+			return _ignore;
+		}
+
+		public void set_ignore(boolean _ignore) {
+			this._ignore = _ignore;
+		}
+
+		public boolean is_isDeleted() {
+			return _isDeleted;
+		}
+
+		public void set_isDeleted(boolean _isDeleted) {
+			this._isDeleted = _isDeleted;
+		}
+
+		public boolean is_nameIgnore() {
+			return _nameIgnore;
+		}
+
+		public void set_nameIgnore(boolean _nameIgnore) {
+			this._nameIgnore = _nameIgnore;
+		}
+
+		public boolean is_nameIsDeleted() {
+			return _nameIsDeleted;
+		}
+
+		public void set_nameIsDeleted(boolean _nameIsDeleted) {
+			this._nameIsDeleted = _nameIsDeleted;
+		}
+
+		public boolean is_nameIsPrivate() {
+			return _nameIsPrivate;
+		}
+
+		public void set_nameIsPrivate(boolean _nameIsPrivate) {
+			this._nameIsPrivate = _nameIsPrivate;
+		}
+
+		public Address get_address() {
+			return _address;
+		}
+
+		public void set_address(Address address) {
+			this._address = address;
+		}
+		public void set_address(String addressLine0, String addressLine1, String addressLine2, String addressLine3){
+			this._address.setAddressLine(0, addressLine0);
+			this._address.setAddressLine(1, addressLine1);
+			this._address.setAddressLine(2, addressLine2);
+			this._address.setAddressLine(3, addressLine3);
+		}
+
+		public long get_categoryId() {
+			return _categoryId;
+		}
+
+		public void set_categoryId(long _categoryId) {
+			this._categoryId = _categoryId;
+		}
+		
+}

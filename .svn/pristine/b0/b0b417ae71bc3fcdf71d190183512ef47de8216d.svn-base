@@ -1,0 +1,82 @@
+package com.kajun258456357159.gps.task;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+
+import com.kajun258456357159.gps.task.layout.lists.CategoryList;
+import com.kajun258456357159.gps.task.services.DBHelper;
+import com.kajun258456357159.gps.task.vo.CategoryVO;
+
+public class EditCategories extends Activity implements OnClickListener {
+	static final String TAG = "EditCategory";
+	public final static String EDITCATEGORY = "com.kajun258456357159.gps.task.EDITCATEGORY";
+	public final static String ID = ".ID";
+	private LinearLayout layoutCategoryList;
+	private CategoryList categoryList; 
+	private EditText categoryName; 
+	DBHelper dbHelper = new DBHelper(this);
+	CategoryVO category = new CategoryVO();
+
+
+	public void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		Log.d(TAG, "onCreate started");
+		setContentView(R.layout.activity_edit_categories);
+		categoryName = (EditText)findViewById(R.id.editCategory_CategoryName);
+		layoutCategoryList = (LinearLayout)findViewById(R.id.listCategory);
+		
+		//TODO find out why this dosent work
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		Log.d(TAG, "onCreate finished");
+	}
+	
+	public void onResume(){
+		super.onResume();
+		Log.d(TAG, "onResume started");
+		categoryName.setText(category.get_name());
+
+		//This builds the list of categories
+		layoutCategoryList.removeAllViews();
+		categoryList = new CategoryList(this);
+		categoryList.set_categoryArrayList(dbHelper.loadCategoryList(DBHelper.LOAD_ALL_CATEGORIES));
+		categoryList.setClickable(Boolean.TRUE);
+		categoryList.set_isMultiselect(Boolean.FALSE);
+		categoryList.setOnClickListener(this);
+		layoutCategoryList.addView(categoryList.get_categoryList(this));
+		Log.d(TAG, "onResume finished");
+		
+	}
+	
+	public void onClickDeleteCategory(View view){
+		Log.d(TAG, "onClickDeleteCategory started");
+		category.set_isDeleted(Boolean.TRUE);
+		dbHelper.saveCategory(category);
+		Log.d(TAG, "onClickDeleteCategory finished");
+	}
+	
+	public void onClickSaveCategory(View view){
+		Log.d(TAG, "onClickSaveCategory started");
+
+		
+		category.set_name(categoryName.getText().toString());
+		dbHelper.saveCategory(category);
+		// clean up this code to use DBHelper to save the task items to the db
+		category = new CategoryVO();
+		this.onResume();
+		Log.d(TAG, "onClickSaveCategory finished");
+		
+//		this.finish();
+		
+	}
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		CategoryList categoryList = (CategoryList) v;
+		category = dbHelper.loadCategory(categoryList.get_clickedItemId());
+		categoryName.setText(category.get_name());
+	}
+}

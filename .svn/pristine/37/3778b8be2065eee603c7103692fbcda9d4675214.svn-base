@@ -1,0 +1,166 @@
+package com.kajun258456357159.gps.task;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+
+import com.kajun258456357159.gps.task.layout.lists.TaskItem;
+import com.kajun258456357159.gps.task.model.Dbio;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+import com.kajun258456357159.gps.task.vo.TaskListItemVO;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+
+
+public class TaskList extends Activity{
+	public final static String TASKLIST = "com.kajun258456357159.gps.task.TASKLIST";
+	public final static String NAME = ".NAME";
+	public final static String ID = ".ID";
+	public final static String ISNEW = ".ISNEW";
+	public final static int UPDATEMINDISTANCE = 50; //in meters
+	private static final String TAG = "TaskList";
+	private Dbio dbHelper;
+//	private LinearLayout taskRow;
+	
+	
+//  TODO used to search task list	
+	private EditText editSearchAddTask;
+	private ArrayList<TaskVO> taskList;
+	private ArrayList<TaskItem> taskArrayList;
+	
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_task_list);
+        dbHelper = new Dbio(this);
+        taskList = new ArrayList<TaskVO>();
+        editSearchAddTask = (EditText)findViewById(R.id.editTasks_SearchAddTask);
+    }
+    
+    public void onResume(){
+    	super.onResume();
+    	//load tasks
+		taskList= dbHelper.loadTasks(1);
+		taskArrayList = new ArrayList<TaskItem>();
+    	//add a row for each task
+    	LinearLayout layoutListTasks = (LinearLayout)this.findViewById(R.id.layoutListTasks);
+    	layoutListTasks.removeAllViews();
+    	
+    	//for loop to be add each task row to the task list
+    	for (int i = 0; i<taskList.size();i++){
+    		if (taskList.get(i).is_isComplete()){
+    			
+    		} else {
+    			TaskItem taskRow = new TaskItem(this);
+    			taskRow.set_Task(taskList.get(i), layoutListTasks);
+    			
+    			taskArrayList.add(taskRow);
+        		
+            	layoutListTasks.addView(taskArrayList.get(taskArrayList.size()-1).get_taskItem(this));
+    			
+    		}
+        	//end for loop
+    	}
+    }
+
+	protected void onPause(){
+		super.onPause();
+		for (int i = 0; i<taskArrayList.size()-1;i++){
+			taskArrayList.get(i).onDestroy();
+		}
+	}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+    
+    public void onClickTaskName(View v) {
+		Intent intent = new Intent(this, EditTasks.class);
+		intent.putExtra(TASKLIST + NAME, "");
+		intent.putExtra(TASKLIST + ID, Long.valueOf(v.getId()));
+		intent.putExtra(TASKLIST + ISNEW, Boolean.FALSE);
+		startActivity(intent);
+    }
+
+    public void onClickTaskDistance(View v) {
+		if (Long.valueOf(v.getId())==0){
+    	//bring to screen to notify user there are no location with this category
+			Toast.makeText(this, "No locations for this task", Toast.LENGTH_SHORT).show();
+		} else {
+			//show location info
+	    	Intent intent = new Intent(this, LocationView.class);
+	    	intent.putExtra(LocationView.LOCATIONVIEW + LocationView.CATEGORYID, Long.valueOf(v.getId()));
+	    	startActivity(intent);
+		}
+    }
+    
+    
+	public void addTask(View view) {
+				
+		Intent intent = new Intent(this, EditTasks.class);
+		
+		editSearchAddTask = (EditText) findViewById(R.id.editTasks_SearchAddTask);
+		String message = editSearchAddTask.getText().toString();
+		intent.putExtra((TASKLIST + NAME), message);
+		intent.putExtra(TASKLIST + ID, 0);
+		intent.putExtra((TASKLIST + ISNEW), Boolean.TRUE);
+		editSearchAddTask.setText("");
+		startActivity(intent);
+	}
+	
+	public void updateTask(View v){
+		
+    	TaskListItemVO listTask = new TaskListItemVO();
+    	CheckBox checkBox = (CheckBox) v.findViewById(v.getId());
+    	
+		//get the id of the checkbox that was clicked
+    	listTask.set_id(v.getId());
+    	listTask.set_isComplete(checkBox.isChecked());
+    	
+		//write the id number and checked status to db
+    	dbHelper.isCompleteTaskSave(listTask);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			// This ID represents the Home or Up button. In the case of this
+			// activity, the Up button is shown. Use NavUtils to allow users
+			// to navigate up one level in the application structure. For
+			// more details, see the Navigation pattern on Android Design:
+			//
+			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
+			//
+			NavUtils.navigateUpFromSameTask(this);
+			
+			break;
+		case R.id.menuEditLocations:
+			startActivity(new Intent(this, SelectLocationName.class));
+			break;
+		case R.id.menuEditCategories:
+			startActivity(new Intent(this, EditCategories.class));
+			break;
+		case R.id.menuSettings:
+			break;
+		case R.id.menuLoadPOI:
+			startActivity(new Intent(this, LoadPOI.class));
+			break;
+		}
+		return true;
+	}
+
+}

@@ -1,0 +1,850 @@
+package com.kajun258456357159.gps.task.model;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
+import android.util.Log;
+
+import com.kajun258456357159.gps.task.vo.CategoryVO;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+public class DbDoAll extends SQLiteOpenHelper {
+	static final String TAG = "DbHelper";
+	static final String DB_NAME = "/data/data/com.kajun258456357159.gps.task/databases/Tasks.db";
+	static final int DB_VERSION = 9;
+	public static final int LOAD_ALL_CATEGORIES = -1;
+
+	//Database tables
+	static final String TABLE_LOCATION_NAME = "tableLocationName";
+	static final String TABLE_LOCATION = "tableLocation";
+	static final String TABLE_LOCATION_CATEGORY = "tableLocationCategory";
+	static final String TABLE_TASK = "tableTask";
+	static final String TABLE_TASK_NAME = "tableTaskName";
+	static final String TABLE_CATEGORY = "tableCategory";
+	
+	//Fields for TABLE_LOCATION_NAME
+	static final String TXT_LOCATION_NAME_ID = "intLocationNameId";
+	static final String TXT_LOCATION_NAME = "txtLocationName";
+	static final String TXT_LOCATION_NAME_IGNORE = "bLocationNameIgnore";
+	static final String TXT_LOCATION_NAME_DELETE = "bLocationNameDelete";
+	static final String TXT_LOCATION_NAME_UPLOADED = "bLocationNameUploaded";
+	
+	//Fields for TABLE_LOCATION
+	static final String TXT_LOCATION_ID = 				"intLocationId";
+//	static final String TXT_LOCATION_NAME_ID = "intLocationName";  <--link to LOCATION_NAME table
+	static final String TXT_LOCATION_LAT = 				"flLocationLat";
+	static final String TXT_LOCATION_LONG = 			"flLocationLong";
+	static final String TXT_LOCATION_ADDRESS_LINE_0 = 	"txtLocationAddressLine0";
+	static final String TXT_LOCATION_ADDRESS_LINE_1 = 	"txtLocationAddressLine1";
+	static final String TXT_LOCATION_ADDRESS_LINE_2 = 	"txtLocationAddressLine2";
+	static final String TXT_LOCATION_ADDRESS_LINE_3 = 	"txtLocationAddressLine3";
+	static final String TXT_LOCATION_PHONE = "txtLocationPhoneNumber";
+	static final String TXT_LOCATION_IGNORE = "bLocationIgnore";
+	static final String TXT_LOCATION_DELETE = "bLocationDelete";
+	static final String TXT_LOCATION_UPLOADED = "bLocationUploaded";
+
+	//Fields for TABLE_TASK
+	static final String TXT_TASK_ID = "intTaskId";
+//	static final String TXT_TASK_NAME_ID = "intTaskNameId";
+	static final String TXT_TASK_PRIORITY = "txtTaskPriority";
+	static final String TXT_TASK_START_DATE = "txtTaskStartDate";
+	static final String TXT_TASK_END_DATE = "txtTaskEndDate";
+//	static final String TXT_LOCATION_NAME_ID = "txtLocationNameId";
+//	static final String TXT_LOCATION_ID = "intLocationId";
+//	static final String TXT_CATEGORY_ID = "intCategoryId";
+	static final String TXT_TASK_PARENT_ID = "txtTaskParentId";
+	static final String TXT_TASK_COMPLETE = "bTaskComplete";	
+
+	//Fields for TABLE_TASK_NAME
+	static final String TXT_TASK_NAME_ID = "intTaskNameId";
+	static final String TXT_TASK_NAME = "txtTaskName";
+//	static final String TXT_CATEGORY_ID = "intCategoryId";
+	static final String TXT_TASK_NAME_DELETED = "bTaskNameDeleted"; 
+	static final String TXT_TASK_NAME_UPLOADED = "bTaskNameUploaded"; 
+
+	//Fields for TABLE_CATEGORY
+	static final String TXT_CATEGORY_ID = "intCategoryId";
+	static final String TXT_CATEGORY_NAME = "txtCategoryName";
+	static final String TXT_CATEGORY_DELETE = "bCategoryDelete";
+	static final String TXT_CATEGORY_UPLOADED = "bCategoryUploaded";
+	
+	// Fields for TABLE_LOCATION_CATEGORY 
+	static final String TXT_LOCATION_CATEGORY_ID = "txtID";
+//	static final String TXT_CATEGORY_ID = "intCategoryId";
+//	static final String TXT_LOCATION_NAME_ID = "intLocationName";
+
+	
+	Context context;
+
+	//Constructor
+	public DbDoAll(Context context){
+		super(context,DB_NAME,null,DB_VERSION);
+		this.context = context;
+		BackupDatabaseFile();
+	}
+	
+	// Called only once, first time the DB is created
+	@Override
+	public void onCreate(SQLiteDatabase db){
+		Log.d(TAG, "onCreate started");
+
+		String sqlLocationName = "CREATE table " + TABLE_LOCATION_NAME + "(" + TXT_LOCATION_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ TXT_LOCATION_NAME + " text, "
+				+ TXT_LOCATION_NAME_IGNORE + " boolean, " + TXT_LOCATION_NAME_DELETE + " boolean, " + TXT_LOCATION_NAME_UPLOADED + " boolean)";
+		db.execSQL(sqlLocationName);
+		Log.d(TAG, "onCreateed sql: " + sqlLocationName);
+		
+		String sqlLocation = "CREATE table " + TABLE_LOCATION + "(" + TXT_LOCATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TXT_LOCATION_NAME_ID + " int, "
+				+ TXT_LOCATION_LAT + " float, " + TXT_LOCATION_LONG + " float, "
+				+ TXT_LOCATION_ADDRESS_LINE_0 + " text, " + TXT_LOCATION_ADDRESS_LINE_1 + " text, " + TXT_LOCATION_ADDRESS_LINE_2 + " text, " + TXT_LOCATION_ADDRESS_LINE_3 + " text, "
+				+ TXT_LOCATION_PHONE + " text, "
+				+ TXT_LOCATION_IGNORE + " boolean, " + TXT_LOCATION_DELETE + " boolean, "
+				+ TXT_LOCATION_UPLOADED + " boolean)";
+		db.execSQL(sqlLocation);
+		Log.d(TAG, "onCreateed sql: " + sqlLocation);
+		
+		String sqlTask = "CREATE table " + TABLE_TASK + "(" + TXT_TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TXT_TASK_NAME_ID + " int, " + TXT_TASK_PRIORITY + " int, "
+				+ TXT_TASK_START_DATE + " text, " + TXT_TASK_END_DATE +  " text, " + TXT_LOCATION_ID + " int, " + TXT_LOCATION_NAME_ID + " int, "
+				+ TXT_TASK_PARENT_ID + " INT, " + TXT_TASK_COMPLETE + " boolean)";
+		db.execSQL(sqlTask);
+		Log.d(TAG, "onCreateed sql: " + sqlTask);
+		
+		String sqlTaskName = "CREATE table " + TABLE_TASK_NAME + "(" + TXT_TASK_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TXT_TASK_NAME + " text, "
+				+ TXT_CATEGORY_ID + " int, " + TXT_TASK_NAME_DELETED + " boolean, " + TXT_TASK_NAME_UPLOADED + " boolean)";
+		db.execSQL(sqlTaskName);
+		Log.d(TAG, "onCreateed sql: " + sqlTaskName);
+		
+		
+		String sqlCategoy = "Create table " + TABLE_CATEGORY + "(" + TXT_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TXT_CATEGORY_NAME + " int, "
+				+ TXT_CATEGORY_DELETE + " boolean, " + TXT_CATEGORY_UPLOADED + " boolean)";
+		db.execSQL(sqlCategoy);
+		Log.d(TAG, "onCreateed sql: " + sqlCategoy);
+		
+		String sqlLocationDept = "CREATE table " + TABLE_LOCATION_CATEGORY + "(" + TXT_LOCATION_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ TXT_LOCATION_NAME_ID + " int, " + TXT_CATEGORY_ID + " int)";
+		db.execSQL(sqlLocationDept);
+		Log.d(TAG, "onCreateed sql: " + sqlLocationDept);
+		Log.d(TAG, "onCreate finished");
+
+	}
+	
+	
+	//Called when newVersion != oldVersion
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+		Log.d(TAG, "onUpdated started. Old version: " + oldVersion + ".  New version: " + newVersion);
+
+		switch(oldVersion){
+		case 2:
+			//TASK TABLE added CATEGORY ID field
+			db.execSQL("ALTER TABLE " + TABLE_TASK + " ADD COLUMN " + TXT_CATEGORY_ID + " int");
+		case 3:
+			//Location category table had an error with the a column name
+			db.execSQL("DROP TABLE " + TABLE_LOCATION_CATEGORY);
+			db.execSQL("CREATE table " + TABLE_LOCATION_CATEGORY + "(" + TXT_LOCATION_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ TXT_LOCATION_NAME_ID + " int, " + TXT_LOCATION_ID + " int)");
+		case 4:
+			//Lets try that again
+			db.execSQL("DROP TABLE " + TABLE_LOCATION_CATEGORY);
+			db.execSQL("CREATE table " + TABLE_LOCATION_CATEGORY + "(" + TXT_LOCATION_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ TXT_LOCATION_NAME_ID + " int, " + TXT_CATEGORY_ID + " int)");
+		case 5:
+			//add the address lines
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + TXT_LOCATION_ADDRESS_LINE_0 + " text");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + TXT_LOCATION_ADDRESS_LINE_1 + " text");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + TXT_LOCATION_ADDRESS_LINE_2 + " text");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + TXT_LOCATION_ADDRESS_LINE_3 + " text");
+		case 6:
+			//do nothing, testing the database backup
+		case 7:
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + TXT_LOCATION_PHONE + " text");
+		}
+		
+
+		Log.d(TAG, "onUpdated finished. Old version: " + oldVersion + ".  New version: " + newVersion);
+	}
+	
+	private Boolean BackupDatabaseFile(){
+		Boolean result = Boolean.FALSE;
+		try {
+			InputStream in = new FileInputStream(DB_NAME);
+			FileOutputStream out = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/external_sd/POI/backup.db");
+			byte[] buff = new byte[1024];
+			int read = 0;
+			try {
+				while ((read = in.read(buff)) > 0) {
+					out.write(buff, 0, read);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				} finally {
+					try {
+						in.close();
+						out.close();
+						result = Boolean.TRUE;
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+				}
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	
+	public void isCompleteTaskSave(TaskVO listTask){
+		Log.d(TAG, "completeTaskSave started");
+		SQLiteDatabase myDatabase = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.clear();
+		values.put(TXT_TASK_COMPLETE, String.valueOf(listTask.is_isComplete()));
+		int i= myDatabase.update(TABLE_TASK, values, TXT_TASK_ID + "=" + listTask.get_id(), null);
+		Log.d(TAG, "record number " + String.valueOf(i));
+		myDatabase.close();
+		Log.d(TAG, "completeTaskSave finished");
+	}
+	
+	
+	public TaskVO loadEditTask(long taskId) {
+		Log.d(TAG, "loadEditTask started");
+		TaskVO task = new TaskVO();
+		task.set_id(taskId);
+		
+		SQLiteDatabase db = this.getReadableDatabase();
+		//selection query, should only load one record. loaded from task id
+		
+		String sqlQuery = "SELECT " + TABLE_TASK + "." + TXT_TASK_ID + ", " + TABLE_TASK + "." + TXT_TASK_PRIORITY + ", "
+				+ TABLE_TASK + "." + TXT_TASK_PARENT_ID + ", " + TABLE_TASK + "." + TXT_TASK_COMPLETE + ", "
+				+ TABLE_TASK_NAME + "." + TXT_TASK_NAME_ID + ", " + TABLE_TASK_NAME + "." + TXT_TASK_NAME + ", " + TABLE_TASK_NAME + "." + TXT_CATEGORY_ID 
+				+ " FROM " +  TABLE_TASK + ", " + TABLE_TASK_NAME
+				+ " WHERE " + TABLE_TASK + "." + TXT_TASK_NAME_ID + " = " + TABLE_TASK_NAME + "." + TXT_TASK_NAME_ID
+				+ " AND "	+ TABLE_TASK + "." + TXT_TASK_ID + " = " + taskId;
+		
+		Cursor cursor = db.rawQuery(sqlQuery, null);
+		
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_TASK_ID);
+		int priority = cursor.getColumnIndex(TXT_TASK_PRIORITY);
+		int parentId = cursor.getColumnIndex(TXT_TASK_PARENT_ID);
+		int isComplete = cursor.getColumnIndex(TXT_TASK_COMPLETE);
+		int nameId = cursor.getColumnIndex(TXT_TASK_NAME_ID);
+		int name = cursor.getColumnIndex(TXT_TASK_NAME);
+		int categoryId = cursor.getColumnIndex(TXT_CATEGORY_ID);
+		
+
+		if (!cursor.isAfterLast()){
+	
+			cursor.moveToFirst();
+			task.set_id(cursor.getLong(id));
+			task.set_priority(cursor.getInt(priority));
+			task.set_parentId(cursor.getLong(parentId));
+			task.set_isComplete(Boolean.parseBoolean(cursor.getString(isComplete)));
+			task.get_taskName().set_id(cursor.getLong(nameId));
+			task.get_taskName().set_name(cursor.getString(name));
+			task.get_category().set_id(cursor.getLong(categoryId));
+
+	//		listTask.get_coordinates().set_lattitude(cursor.getLong(locationLat));
+	//		listTask.get_coordinates().set_lattitude(cursor.getLong(locationLong));
+		}
+
+		//LOAD THE CATEGORY ID IF IT IS PRESENT
+		if (task.get_category().get_id() != 0){
+			sqlQuery = "SELECT " + TABLE_CATEGORY + "." + TXT_CATEGORY_NAME
+					+ " FROM " + TABLE_CATEGORY
+					+ " WHERE " + TABLE_CATEGORY + "." + TXT_CATEGORY_ID + " = " + task.get_category().get_id();
+			
+			cursor = db.rawQuery(sqlQuery, null);
+			if (!cursor.isAfterLast()){
+				cursor.moveToFirst();
+				int categoryName = cursor.getColumnIndex(TXT_CATEGORY_NAME);
+				task.get_category().set_name(cursor.getString(categoryName));
+			}
+		}
+		
+		db.close();
+		Log.d(TAG, "loadEditTask finished");
+		return task;
+	}
+	
+	public ArrayList<TaskVO> loadTasks(){
+		Log.d(TAG, "loadTasks started");
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		
+		String sqlQuery = "SELECT " + TABLE_TASK + ".*, " + TABLE_TASK_NAME + ".*"
+				+ " FROM " +  TABLE_TASK + ", " + TABLE_TASK_NAME
+				+ " WHERE " + TABLE_TASK + "." + TXT_TASK_NAME_ID + " = " + TABLE_TASK_NAME + "." + TXT_TASK_NAME_ID
+				+ " ORDER BY " + TABLE_TASK + "." + TXT_TASK_PRIORITY + " DESC";
+		
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_TASK_ID);
+		int priority = cursor.getColumnIndex(TXT_TASK_PRIORITY);
+		int parentId = cursor.getColumnIndex(TXT_TASK_PARENT_ID);
+		int isComplete = cursor.getColumnIndex(TXT_TASK_COMPLETE);
+		int locationId = cursor.getColumnIndex(TXT_LOCATION_ID);
+		int locationNameId =  cursor.getColumnIndex(TXT_LOCATION_NAME_ID);
+		int name = cursor.getColumnIndex(TXT_TASK_NAME);
+		int categoryId = cursor.getColumnIndex(TXT_CATEGORY_ID);
+//		int locationLat = cursor.getColumnIndex(TXT_LOCATION_LAT);
+//		int locationLong = cursor.getColumnIndex(TXT_LOCATION_LONG);
+
+		ArrayList<TaskVO> tasksArrayList = new ArrayList<TaskVO>();
+		TaskVO listTask;
+
+		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+			
+			listTask = new TaskVO();
+			listTask.set_id(cursor.getLong(id));
+			listTask.set_priority(cursor.getInt(priority));
+			listTask.set_parentId(cursor.getLong(parentId));
+			listTask.set_isComplete(Boolean.parseBoolean(cursor.getString(isComplete)));
+			listTask.get_taskName().set_name(cursor.getString(name));
+//			listTask.get_location()  cursor.getLong(locationId));
+//			listTask.get_location() cursor.getLong(locationNameId));
+			listTask.get_category().set_id(cursor.getLong(categoryId));
+//			listTask.get_coordinates().set_lattitude(cursor.getLong(locationLat));
+//			listTask.get_coordinates().set_lattitude(cursor.getLong(locationLong));
+			tasksArrayList.add(listTask);
+			
+		}
+		
+		myDatabase.close();
+		Log.d(TAG, "loadTask finished");
+		return tasksArrayList;
+	}
+
+
+
+	public ArrayList<LocationVO> loadTaskLocations(long categoryId){
+		ArrayList<LocationVO> taskLocationList = new ArrayList<LocationVO>();
+		LocationVO locationItem;
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		
+		String sqlQuery = "SELECT " + TABLE_LOCATION + ".*, " + TABLE_LOCATION_NAME + ".*"
+				+ " FROM " + TABLE_LOCATION
+				+ " NATURAL JOIN " + TABLE_LOCATION_NAME
+				+ " NATURAL JOIN " + TABLE_LOCATION_CATEGORY
+				+ " WHERE " + TABLE_LOCATION_CATEGORY + "." + TXT_CATEGORY_ID + " = " + categoryId;
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_LOCATION_ID);
+		int nameId = cursor.getColumnIndex(TXT_LOCATION_NAME_ID);
+		int lattitude = cursor.getColumnIndex(TXT_LOCATION_LAT);
+		int longitude = cursor.getColumnIndex(TXT_LOCATION_LONG);
+		int addressLine0 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_0);
+		int addressLine1 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_1);
+		int addressLine2 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_2);
+		int addressLine3 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_3);
+		int isDeleted = cursor.getColumnIndex(TXT_LOCATION_DELETE);
+		int isBoycotted = cursor.getColumnIndex(TXT_LOCATION_IGNORE);
+		int name = cursor.getColumnIndex(TXT_LOCATION_NAME);
+		int isNameDeleted = cursor.getColumnIndex(TXT_LOCATION_NAME_DELETE);
+//		int isNameBoycotted = cursor.getColumnIndex(TXT_LOCATION_NAME_IGNORE);
+
+		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+			locationItem = new LocationVO();
+			locationItem.set_id(cursor.getLong(id));
+			locationItem.get_locationName().set_id(cursor.getLong(nameId));
+			locationItem.get_coordinate().set_latitude(cursor.getFloat(lattitude));
+			locationItem.get_coordinate().set_longitude(cursor.getFloat(longitude));
+			if(cursor.isNull(addressLine0)){
+				locationItem.get_address().setAddressLine(0,"");
+			} else {
+				locationItem.get_address().setAddressLine(0, cursor.getString(addressLine0));
+			}
+			if(cursor.isNull(addressLine1)){
+				locationItem.get_address().setAddressLine(1,"");
+			} else {
+				locationItem.get_address().setAddressLine(1, cursor.getString(addressLine1));
+			}
+			if(cursor.isNull(addressLine2)){
+				locationItem.get_address().setAddressLine(2,"");
+			} else {
+				locationItem.get_address().setAddressLine(2, cursor.getString(addressLine2));
+			}
+			if(cursor.isNull(addressLine3)){
+				locationItem.get_address().setAddressLine(3,"");
+			} else {
+				locationItem.get_address().setAddressLine(3, cursor.getString(addressLine3));
+			}
+			locationItem.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+			locationItem.set_ignore(Boolean.parseBoolean(cursor.getString(isBoycotted)));
+			locationItem.get_locationName().set_name(cursor.getString(name));
+			locationItem.get_locationName().set_isDeleted(Boolean.parseBoolean(cursor.getString(isNameDeleted)));
+
+			taskLocationList.add(locationItem);
+		}
+		myDatabase.close();
+	
+		return taskLocationList;
+	}
+
+
+
+	public void saveTask(TaskVO task){
+		Log.d(TAG, "saveTask started");
+		// code to write the task to the database
+		
+		SQLiteDatabase myDatabase = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		long taskNameRowId;
+
+		
+		//TODO check for existing ID, if then replace
+		//add task name into database if not already present
+
+		
+		values.clear();
+		values.put(TXT_TASK_NAME, task.get_taskName().get_name().toString());
+		values.put(TXT_TASK_NAME_DELETED, task.get_taskName().is_isDeleted());
+		values.put(TXT_CATEGORY_ID, task.get_category().get_id());
+		values.put(TXT_TASK_NAME_UPLOADED, "false");
+
+		if (task.get_taskName().get_id()!=0){
+			myDatabase.update(TABLE_TASK_NAME, values, TXT_TASK_NAME_ID + "=" + task.get_taskName().get_id(), null);
+			taskNameRowId = task.get_taskName().get_id();
+		} else {
+			taskNameRowId = myDatabase.insertOrThrow(TABLE_TASK_NAME, null, values);
+			task.get_taskName().set_id(taskNameRowId);
+		}
+		Log.d(TAG, "finished writing task name table");
+		
+		
+		//*****************************************
+		//needs to check if the taskId is present, if it is then compare that record against passed values
+		//check if category is in the database, if not then add it
+		//check if the location name is in the database, if not then add it
+		//check if the location is in the database, if not then add it
+		//*****************************************
+
+		
+		
+		
+		//*****************************************
+		//use taskId to check for any related fields in Task Name table
+		//needs to check if there is a duplicate task name in database, search to task name
+		//*****************************************
+		values.clear();
+		values.put(TXT_TASK_NAME_ID, task.get_taskName().get_id());
+		values.put(TXT_TASK_PRIORITY, task.get_priority());
+		values.put(TXT_TASK_START_DATE, task.get_startDateTime().toString());
+		values.put(TXT_TASK_END_DATE, task.get_endDateTime().toString());
+		values.put(TXT_LOCATION_ID, task.get_location().get_id());
+		values.put(TXT_LOCATION_NAME_ID, task.get_location().get_locationName().get_id());
+		values.put(TXT_TASK_COMPLETE, String.valueOf(task.is_isComplete()));
+
+		if (task.get_id()!=0){
+			myDatabase.update(TABLE_TASK, values, TXT_TASK_ID + "=" + task.get_id(), null);
+		} else {
+			myDatabase.insertOrThrow(TABLE_TASK, null, values);
+		}
+		Log.d(TAG, "finished writing task table");
+		
+
+		
+		myDatabase.close();
+		Log.d(TAG, "saveTask finished");
+		
+	}
+	
+	
+	public CategoryVO loadCategory(long categoryId){
+		Log.d(TAG, "loadCategory started");
+	
+		CategoryVO category = new CategoryVO();
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		
+		String sqlQuery = "SELECT " + TABLE_CATEGORY + ".* "
+				+ " FROM " + TABLE_CATEGORY
+				+ " WHERE " + TABLE_CATEGORY + "." + TXT_CATEGORY_ID + " = " +  categoryId;
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_CATEGORY_ID);
+		int name = cursor.getColumnIndex(TXT_CATEGORY_NAME);
+		int isDeleted = cursor.getColumnIndex(TXT_CATEGORY_DELETE);
+		//load category
+		if (!cursor.isAfterLast()){
+			cursor.moveToFirst();
+			category.set_id(cursor.getLong(id));
+			category.set_name(cursor.getString(name));
+			category.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+		}
+		myDatabase.close();
+		Log.d(TAG, "loadCategory finished");
+		return category;
+	}
+
+	public ArrayList<CategoryVO> loadCategoryList(long locationNameId){
+		
+		Log.d(TAG, "loadCategories started");
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		String sqlQuery;
+		if (locationNameId==-1){
+			sqlQuery = "SELECT " + TABLE_CATEGORY + ".* "
+					+ " FROM " + TABLE_CATEGORY
+					+ " ORDER BY " + TABLE_CATEGORY + "." + TXT_CATEGORY_NAME;
+		} else {
+			sqlQuery =  "SELECT " + TABLE_CATEGORY + ".* "
+					+ " FROM " + TABLE_CATEGORY + ", " + TABLE_LOCATION_CATEGORY
+					+ " WHERE " + TABLE_CATEGORY + "." + TXT_CATEGORY_ID + " = " + TABLE_LOCATION_CATEGORY + "." + TXT_CATEGORY_ID
+					+ " AND " + TABLE_LOCATION_CATEGORY + "." + TXT_LOCATION_NAME_ID + " = " + locationNameId 
+					+ " ORDER BY " + TABLE_CATEGORY + "." + TXT_CATEGORY_NAME;
+		}
+		
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_CATEGORY_ID);
+		int name = cursor.getColumnIndex(TXT_CATEGORY_NAME);
+		int isDeleted = cursor.getColumnIndex(TXT_CATEGORY_DELETE);
+
+		ArrayList<CategoryVO> categoriesArrayList = new ArrayList<CategoryVO>();
+		CategoryVO listCategory;
+
+		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+			
+			listCategory = new CategoryVO();
+			listCategory.set_id(cursor.getLong(id));
+			listCategory.set_name(cursor.getString(name));
+			listCategory.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+			categoriesArrayList.add(listCategory);
+		}
+		myDatabase.close();
+		Log.d(TAG, "loadCategories finished");
+		return categoriesArrayList; 
+	}
+	
+	public void saveCategory(CategoryVO category){
+		Log.d(TAG, "saveCategory started");
+		// code to write the category to the database
+		SQLiteDatabase myDatabase = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		//TODO check for existing ID, if then replace
+		//add CATEGORY into database if not already present
+		values.clear();
+		values.put(TXT_CATEGORY_NAME, category.get_name().toString());
+		values.put(TXT_CATEGORY_DELETE, category.is_isDeleted());
+
+		if (category.get_id()!=0){
+			myDatabase.update(TABLE_CATEGORY, values, TXT_CATEGORY_ID + "=" + category.get_id(), null);
+		} else {
+			myDatabase.insertOrThrow(TABLE_CATEGORY, null, values);
+		}
+		myDatabase.close();
+		Log.d(TAG, "finished writing category to table");
+	}
+
+	public LocationVO loadLocation(long locationId) {
+		Log.d(TAG, "loadLocation started");
+		LocationVO location = new LocationVO();
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		
+		String sqlQuery = "SELECT " + TABLE_LOCATION + ".*, " + TABLE_LOCATION_NAME + ".* "
+				+ " FROM " + TABLE_LOCATION + ", " + TABLE_LOCATION_NAME
+				+ " WHERE " + TABLE_LOCATION + "." + TXT_LOCATION_NAME_ID + " = " + TABLE_LOCATION_NAME + "." + TXT_LOCATION_NAME_ID
+				+ " AND "	+ TABLE_LOCATION + "." + TXT_LOCATION_ID + " = " + locationId;
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_LOCATION_ID);
+		int nameId = cursor.getColumnIndex(TXT_LOCATION_NAME_ID);
+		int name = cursor.getColumnIndex(TXT_LOCATION_NAME);
+		int isDeleted = cursor.getColumnIndex(TXT_LOCATION_DELETE);
+		int lattitude = cursor.getColumnIndex(TXT_LOCATION_LAT);
+		int longitude = cursor.getColumnIndex(TXT_LOCATION_LONG);
+		int addressLine0 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_0);
+		int addressLine1 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_1);
+		int addressLine2 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_2);
+		int addressLine3 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_3);
+		int phone = cursor.getColumnIndex(TXT_LOCATION_PHONE);
+		int isBoycotted = cursor.getColumnIndex(TXT_LOCATION_IGNORE);
+		
+		//load location
+		if (!cursor.isAfterLast()){
+			cursor.moveToFirst();
+			location.set_id(cursor.getLong(id));
+			location.get_locationName().set_id(cursor.getLong(nameId));
+			location.get_locationName().set_name(cursor.getString(name));
+			location.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+			location.get_coordinate().set_latitude(cursor.getFloat(lattitude));
+			location.get_coordinate().set_longitude(cursor.getFloat(longitude));
+			if(cursor.isNull(addressLine0)){
+				location.get_address().setAddressLine(0,"");
+			} else {
+				location.get_address().setAddressLine(0, cursor.getString(addressLine0));
+			}
+			if(cursor.isNull(addressLine1)){
+				location.get_address().setAddressLine(1,"");
+			} else {
+				location.get_address().setAddressLine(1, cursor.getString(addressLine1));
+			}
+			if(cursor.isNull(addressLine2)){
+				location.get_address().setAddressLine(2,"");
+			} else {
+				location.get_address().setAddressLine(2, cursor.getString(addressLine2));
+			}
+			if(cursor.isNull(addressLine3)){
+				location.get_address().setAddressLine(3,"");
+			} else {
+				location.get_address().setAddressLine(3, cursor.getString(addressLine3));
+			}
+			location.get_address().setPhone(cursor.getString(phone));
+			location.set_ignore(Boolean.parseBoolean(cursor.getString(isBoycotted)));
+		}
+		myDatabase.close();
+	
+		Log.d(TAG, "loadLocation finished");
+		return location;
+	}
+	
+	public ArrayList<LocationVO> loadLocationList(long locationNameId){
+			Log.d(TAG, "loadLocationList started");
+			SQLiteDatabase myDatabase = this.getReadableDatabase();
+			ArrayList<LocationVO> locationList = new ArrayList<LocationVO>();
+			LocationVO locationItem = new LocationVO();
+			String sqlQuery = "SELECT " + TABLE_LOCATION + ".*, " + TABLE_LOCATION_NAME + ".* "
+					+ " FROM " + TABLE_LOCATION + ", " + TABLE_LOCATION_NAME
+					+ " WHERE " + TABLE_LOCATION + "." + TXT_LOCATION_NAME_ID + " = " + TABLE_LOCATION_NAME + "." + TXT_LOCATION_NAME_ID
+					+ " AND "	+ TABLE_LOCATION_NAME + "." + TXT_LOCATION_NAME_ID + " = " + locationNameId;		
+			Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+			int id = cursor.getColumnIndex(TXT_LOCATION_ID);
+			int nameId = cursor.getColumnIndex(TXT_LOCATION_NAME_ID);
+			int lattitude = cursor.getColumnIndex(TXT_LOCATION_LAT);
+			int longitude = cursor.getColumnIndex(TXT_LOCATION_LONG);
+			int addressLine0 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_0);
+			int addressLine1 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_1);
+			int addressLine2 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_2);
+			int addressLine3 = cursor.getColumnIndex(TXT_LOCATION_ADDRESS_LINE_3);
+			int phone = cursor.getColumnIndex(TXT_LOCATION_PHONE);			
+			int isDeleted = cursor.getColumnIndex(TXT_LOCATION_DELETE);
+			int isBoycotted = cursor.getColumnIndex(TXT_LOCATION_IGNORE);
+			int name = cursor.getColumnIndex(TXT_LOCATION_NAME);
+			int isNameDeleted = cursor.getColumnIndex(TXT_LOCATION_NAME_DELETE);
+//			int isNameBoycotted = cursor.getColumnIndex(TXT_LOCATION_NAME_IGNORE);
+	
+			for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+				locationItem = new LocationVO();
+				locationItem.set_id(cursor.getLong(id));
+				locationItem.get_locationName().set_id(cursor.getLong(nameId));
+				locationItem.get_coordinate().set_latitude(cursor.getFloat(lattitude));
+				locationItem.get_coordinate().set_longitude(cursor.getFloat(longitude));
+				if(cursor.isNull(addressLine0)){
+					locationItem.get_address().setAddressLine(0,"");
+				} else {
+					locationItem.get_address().setAddressLine(0, cursor.getString(addressLine0));
+				}
+				if(cursor.isNull(addressLine1)){
+					locationItem.get_address().setAddressLine(1,"");
+				} else {
+					locationItem.get_address().setAddressLine(1, cursor.getString(addressLine1));
+				}
+				if(cursor.isNull(addressLine2)){
+					locationItem.get_address().setAddressLine(2,"");
+				} else {
+					locationItem.get_address().setAddressLine(2, cursor.getString(addressLine2));
+				}
+				if(cursor.isNull(addressLine3)){
+					locationItem.get_address().setAddressLine(3,"");
+				} else {
+					locationItem.get_address().setAddressLine(3, cursor.getString(addressLine3));
+				}
+				locationItem.get_address().setPhone(cursor.getString(phone));
+				locationItem.set_ignore(Boolean.parseBoolean(cursor.getString(isBoycotted)));
+				locationItem.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+				locationItem.get_locationName().set_name(cursor.getString(name));
+				locationItem.get_locationName().set_isDeleted(Boolean.parseBoolean(cursor.getString(isNameDeleted)));
+				locationList.add(locationItem);
+	// TODO			locationItem.set_nameIsBoycotted(Boolean.parseBoolean(cursor.getString(isNameDeleted)));
+			}
+			myDatabase.close();
+		
+	
+			
+			return locationList;
+		}
+
+
+
+	public void saveLocation(LocationVO location){
+		Log.d(TAG, "saveLocation started");
+		SQLiteDatabase myDatabase = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		
+		values.clear();
+		values.put(TXT_LOCATION_NAME_ID, location.get_locationName().get_id());
+		values.put(TXT_LOCATION_LAT, location.get_coordinate().get_latitude());
+		values.put(TXT_LOCATION_LONG, location.get_coordinate().get_longitude());
+		values.put(TXT_LOCATION_ADDRESS_LINE_0, location.get_address().getAddressLine(0));
+		values.put(TXT_LOCATION_ADDRESS_LINE_1, location.get_address().getAddressLine(1));
+		values.put(TXT_LOCATION_ADDRESS_LINE_2, location.get_address().getAddressLine(2));
+		values.put(TXT_LOCATION_ADDRESS_LINE_3, location.get_address().getAddressLine(3));
+		values.put(TXT_LOCATION_DELETE, Boolean.toString(location.is_isDeleted()));
+		values.put(TXT_LOCATION_IGNORE, Boolean.toString(location.is_ignore()));
+		
+		if (location.get_id()!=-1){
+			myDatabase.update(TABLE_LOCATION, values, TXT_LOCATION_ID + " = " + location.get_id(), null);
+		} else {
+			myDatabase.insertOrThrow(TABLE_LOCATION, null, values);
+		}
+		myDatabase.close();
+		Log.d(TAG, "saveLocation finished");
+	}
+	
+	public void saveLocationList(ArrayList<LocationVO> locationList){
+		Log.d(TAG, "saveLocation started");
+		SQLiteDatabase myDatabase = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		
+		myDatabase.delete(TABLE_LOCATION, TXT_LOCATION_NAME_ID + "=" + locationList.get(0).get_locationName().get_id(), null);
+		for(int i=0;i<=locationList.size()-1;i++){
+			values.clear();
+			values.put(TXT_LOCATION_NAME_ID, locationList.get(i).get_locationName().get_id());
+			values.put(TXT_LOCATION_LAT, locationList.get(i).get_coordinate().get_latitude());
+			values.put(TXT_LOCATION_LONG, locationList.get(i).get_coordinate().get_longitude());
+			values.put(TXT_LOCATION_ADDRESS_LINE_0, locationList.get(i).get_address().getAddressLine(0));
+			values.put(TXT_LOCATION_ADDRESS_LINE_1, locationList.get(i).get_address().getAddressLine(1));
+			values.put(TXT_LOCATION_ADDRESS_LINE_2, locationList.get(i).get_address().getAddressLine(2));
+			values.put(TXT_LOCATION_ADDRESS_LINE_3, locationList.get(i).get_address().getAddressLine(3));
+			values.put(TXT_LOCATION_PHONE, locationList.get(i).get_address().getPhone());
+			values.put(TXT_LOCATION_DELETE, Boolean.toString(locationList.get(i).is_isDeleted()));
+			values.put(TXT_LOCATION_IGNORE, Boolean.toString(locationList.get(i).is_ignore()));
+			myDatabase.insertOrThrow(TABLE_LOCATION, null, values);
+		}
+		myDatabase.close();
+		Log.d(TAG, "saveLocation finished");
+		
+	}
+
+	public LocationVO loadLocationName(long locationNameId){
+			Log.d(TAG, "loadLocationName started");
+			LocationVO locationName = new LocationVO();
+			SQLiteDatabase myDatabase = this.getReadableDatabase();
+			
+			String sqlQuery = "SELECT " + TABLE_LOCATION_NAME + ".*" 
+					+ " FROM " + TABLE_LOCATION_NAME
+					+ " WHERE " + TABLE_LOCATION_NAME + "." + TXT_LOCATION_NAME_ID + " = " + locationNameId;
+			Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+			// integers to get each of the Column indexes
+			int nameId = cursor.getColumnIndex(TXT_LOCATION_NAME_ID);
+			int name = cursor.getColumnIndex(TXT_LOCATION_NAME);
+	//		int isBoycotted = cursor.getColumnIndex();
+			int isDeleted = cursor.getColumnIndex(TXT_LOCATION_NAME_DELETE);
+			
+			//load location
+			if (!cursor.isAfterLast()){
+				cursor.moveToFirst();
+				locationName.get_locationName().set_id(cursor.getLong(nameId));
+				locationName.get_locationName().set_name(cursor.getString(name));
+				locationName.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+			}
+			myDatabase.close();
+		
+			Log.d(TAG, "loadLocationName finished");
+			return locationName;
+			
+		}
+
+
+
+	public ArrayList<LocationVO> loadLocationNameList(){
+		
+		Log.d(TAG, "loadLocationNames started");
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		
+		String sqlQuery = "SELECT " + TABLE_LOCATION_NAME + ".*"
+				+ " FROM " + TABLE_LOCATION_NAME
+				+ " ORDER BY " + TABLE_LOCATION_NAME + "." + TXT_LOCATION_NAME;
+		
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TXT_LOCATION_NAME_ID);
+		int name = cursor.getColumnIndex(TXT_LOCATION_NAME);
+		int isDeleted = cursor.getColumnIndex(TXT_LOCATION_NAME_DELETE);
+	
+		ArrayList<LocationVO> locationNameArrayList = new ArrayList<LocationVO>();
+		LocationVO listLocationName;
+	
+		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+			
+			listLocationName = new LocationVO();
+			listLocationName.set_id(cursor.getLong(id));
+			listLocationName.get_locationName().set_name(cursor.getString(name));
+			listLocationName.set_isDeleted(Boolean.parseBoolean(cursor.getString(isDeleted)));
+			locationNameArrayList.add(listLocationName);
+		}
+		myDatabase.close();
+		Log.d(TAG, "loadLocationNames finished");
+		return locationNameArrayList; 
+	}
+
+
+
+	public void saveLocationName(LocationVO locationName){
+		Log.d(TAG, "saveLocationName started");
+		// code to write the location name to the database
+		SQLiteDatabase myDatabase = this.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		//TODO check for existing ID, if then replace
+		//add CATEGORY into database if not already present
+		values.clear();
+		values.put(TXT_LOCATION_NAME, locationName.get_locationName().get_name().toString());
+		values.put(TXT_LOCATION_NAME_IGNORE, locationName.get_locationName().is_isBoycotted());
+		values.put(TXT_LOCATION_NAME_DELETE, locationName.get_locationName().is_isDeleted());
+		values.put(TXT_LOCATION_NAME_UPLOADED, Boolean.FALSE);
+
+		if (locationName.get_locationName().get_id()!=-1){
+			myDatabase.update(TABLE_LOCATION_NAME, values, TXT_LOCATION_NAME_ID + "=" + locationName.get_locationName().get_id(), null);
+		} else {
+			myDatabase.insertOrThrow(TABLE_LOCATION_NAME, null, values);
+		}
+		myDatabase.close();
+		Log.d(TAG, "saveLocationName finshed");
+	}
+
+	public ArrayList<Long> loadLocationNameCategories(Long locationId){
+		Log.d(TAG, "loadLocationNameCategories started");
+		ArrayList<Long> checkedCategoryIds = new ArrayList<Long>();
+		SQLiteDatabase db = this.getWritableDatabase();
+		String sqlQuery = "SELECT " + TABLE_LOCATION_CATEGORY + ".*"
+				+ " FROM " + TABLE_LOCATION_CATEGORY
+				+ " WHERE " + TABLE_LOCATION_CATEGORY + "." + TXT_LOCATION_NAME_ID + " = " + locationId;
+		Cursor cursor = db.rawQuery(sqlQuery, null);
+		int categoryId = cursor.getColumnIndex(TXT_CATEGORY_ID);
+		
+		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+			checkedCategoryIds.add(cursor.getLong(categoryId));
+		}
+		Log.d(TAG, "loadLocationNameCategories finished");
+		return checkedCategoryIds;
+	}
+	public void saveLocationNameCategories(ArrayList<Long> checkedCategoryIds, Long locationId){
+		Log.d(TAG, "saveLocationNameCategories started");
+		SQLiteDatabase db = this.getWritableDatabase();
+		db.execSQL("DELETE FROM " + TABLE_LOCATION_CATEGORY + " WHERE " + TXT_LOCATION_NAME_ID + " = " + locationId);
+		ContentValues values = new ContentValues();
+		for(int i=0;i<checkedCategoryIds.size();i++){
+			values.clear();
+			values.put(TXT_LOCATION_NAME_ID, locationId);
+			values.put(TXT_CATEGORY_ID, checkedCategoryIds.get(i));
+			db.insertOrThrow(TABLE_LOCATION_CATEGORY, null, values);
+		}
+		db.close();
+		Log.d(TAG, "saveLocationNameCategories started " + checkedCategoryIds.size() + " records added");
+	}
+}

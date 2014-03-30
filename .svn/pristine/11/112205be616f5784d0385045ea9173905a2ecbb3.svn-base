@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+    	android:layout_height="wrap_content"
+	    android:orientation="vertical">
+
+	    <RelativeLayout
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content" >
+
+	        <TextView
+	            android:id="@+id/editLocation_locationName"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:textSize="15sp" >
+	
+	        </TextView>
+
+	        <EditText
+	            android:id="@+id/editLocation_locationAddress"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_alignParentLeft="true"
+	            android:layout_below="@+id/editLocation_locationName"
+	            android:ems="10"
+	            android:inputType="textPostalAddress|textMultiLine" />
+
+	        <EditText
+	            android:id="@+id/editLocation_lattitute"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:inputType="text|numberDecimal"
+	            android:layout_alignParentLeft="true"
+	            android:layout_below="@+id/editLocation_locationAddress"/>
+
+	        <EditText
+	            android:id="@+id/editLocation_longitude"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_below="@+id/editLocation_lattitute"
+	            android:inputType="text|numberDecimal"/>
+
+
+   	        <CheckBox
+	            android:id="@+id/editLocation_isBoycotted"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_alignParentLeft="true"
+	            android:layout_below="@+id/editLocation_longitude"
+	            android:text="Boycott" />
+
+   	        <ImageButton
+   	            android:id="@+id/editLocation_saveLocation"
+   	            android:layout_width="wrap_content"
+   	            android:layout_height="wrap_content"
+   	            android:layout_alignParentBottom="true"
+   	            android:layout_alignParentRight="true"
+   	            android:onClick="onClickSaveLocation"
+   	            android:src="@android:drawable/ic_menu_save" />
+
+   	        <ImageButton
+   	            android:id="@+id/editLocation_deleteLocation"
+   	            android:layout_width="wrap_content"
+   	            android:layout_height="wrap_content"
+   	            android:layout_alignParentBottom="true"
+   	            android:layout_toLeftOf="@+id/editLocation_saveLocation"
+   	            android:onClick="onClickDeleteLocation"
+   	            android:src="@android:drawable/ic_menu_delete" />
+
+   	        <ImageButton
+   	            android:id="@+id/editLocation_getGPS"
+   	            android:layout_width="wrap_content"
+   	            android:layout_height="wrap_content"
+   	            android:layout_below="@+id/editLocation_longitude"
+   	            android:layout_toLeftOf="@+id/editLocation_deleteLocation"
+   	            android:onClick="onClickGetGPSCoordinates"
+   	            android:src="@android:drawable/ic_menu_mylocation" />
+
+   	        <ImageButton
+   	            android:id="@+id/editLocation_loadPOI"
+   	            android:layout_width="wrap_content"
+   	            android:layout_height="wrap_content"
+   	            android:layout_below="@+id/editLocation_longitude"
+   	            android:layout_toLeftOf="@+id/editLocation_getGPS"
+   	            android:onClick="onClickLoadPOI"
+   	            
+   	            android:src="@android:drawable/ic_menu_myplaces" />
+	        
+   	    </RelativeLayout>
+	    <LinearLayout 
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:id="@+id/editLocation_listLocation"
+		    android:orientation="vertical">
+	        
+	    </LinearLayout>
+    </LinearLayout>
+</ScrollView>

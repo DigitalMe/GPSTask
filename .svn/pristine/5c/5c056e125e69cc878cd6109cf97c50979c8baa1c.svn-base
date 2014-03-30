@@ -1,0 +1,349 @@
+package com.kajun258456357159.gps.task.model;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseErrorHandler;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
+import android.util.Log;
+
+import com.kajun258456357159.gps.task.vo.CategoryVO;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+import com.kajun258456357159.gps.task.vo.TaskNameVO;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+public class DbManager extends SQLiteOpenHelper {
+	public DbManager(Context context, String name, CursorFactory factory,
+			int version, DatabaseErrorHandler errorHandler) {
+		super(context, name, factory, version, errorHandler);
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+	static final String TAG = "DdManager";
+	static final String DB_NAME = "/data/data/com.kajun258456357159.gps.task/databases/Tasks.db";
+	static final int DB_VERSION = 9;
+	public static final int LOAD_ALL_CATEGORIES = -1;
+
+	//Database tables
+	static final String TABLE_LOCATION_NAME = 			"tableLocationName";
+	static final String TABLE_LOCATION = 				"tableLocation";
+	static final String TABLE_LOCATION_CATEGORY = 		"tableLocationCategory";
+	static final String TABLE_TASK = 					"tableTask";
+	static final String TABLE_TASK_NAME = 				"tableTaskName";
+	static final String TABLE_CATEGORY = 				"tableCategory";
+	
+	//Fields for TABLE_LOCATION_NAME
+	static final String LOCATION_NAME_ID = 				"intLocationNameId";
+	static final String LOCATION_NAME = 			"txtLocationName";
+	static final String LOCATION_NAME_IGNORE = 		"bLocationNameIgnore";
+	static final String LOCATION_NAME_IS_PRIVATE =		"bLocationNameIsPrivate";
+	static final String LOCATION_NAME_DELETE = 		"bLocationNameDelete";
+	static final String LOCATION_NAME_UPLOADED = 	"bLocationNameUploaded";
+	
+	//Fields for TABLE_LOCATION
+	static final String LOCATION_ID = 				"intLocationId";
+//	static final String LOCATION_NAME_ID = 			"intLocationName";  <--link to LOCATION_NAME table
+	static final String LOCATION_LAT = 				"flLocationLat";
+	static final String LOCATION_LONG = 			"flLocationLong";
+	static final String LOCATION_ADDRESS_LINE_0 = 	"txtLocationAddressLine0";
+	static final String LOCATION_ADDRESS_LINE_1 = 	"txtLocationAddressLine1";
+	static final String LOCATION_ADDRESS_LINE_2 = 	"txtLocationAddressLine2";
+	static final String LOCATION_ADDRESS_LINE_3 = 	"txtLocationAddressLine3";
+	static final String LOCATION_PHONE = 			"txtLocationPhoneNumber";
+	static final String LOCATION_IGNORE = 			"bLocationIgnore";
+	static final String LOCATION_IS_PRIVATE =			"bLocationIsPrivate";
+	static final String LOCATION_DELETE = 			"bLocationDelete";
+	static final String LOCATION_UPLOADED = 		"bLocationUploaded";
+
+	//Fields for TABLE_TASK
+	static final String TASK_ID = 					"intTaskId";
+//	static final String TASK_NAME_ID = 				"intTaskNameId";
+	static final String TASK_PRIORITY = 			"txtTaskPriority";
+	static final String TASK_START_DATE = 			"txtTaskStartDate";
+	static final String TASK_END_DATE = 			"txtTaskEndDate";
+//	static final String LOCATION_NAME_ID = 			"txtLocationNameId";
+//	static final String LOCATION_ID = 				"intLocationId";
+//	static final String CATEGORY_ID = 				"intCategoryId";
+	static final String TASK_PARENT_ID = 			"txtTaskParentId";
+	static final String TASK_COMPLETE_DATE = 		"txtTaskCompleteDate";
+	static final String TASK_COMPLETE = 			"bTaskComplete";	
+
+	//Fields for TABLE_TASK_NAME
+	static final String TASK_NAME_ID = 				"intTaskNameId";
+	static final String TASK_NAME = 				"txtTaskName";
+//	static final String CATEGORY_ID = 				"intCategoryId";
+	static final String TASK_NAME_DELETED = 		"bTaskNameDeleted"; 
+	static final String TASK_NAME_IS_PRIVATE =			"bTaskNameIsPrivate";
+	static final String TASK_NAME_UPLOADED = 		"bTaskNameUploaded"; 
+
+	//Fields for TABLE_CATEGORY
+	static final String CATEGORY_ID = 				"intCategoryId";
+	static final String CATEGORY_NAME = 			"txtCategoryName";
+	static final String CATEGORY_PARENT_ID = 			"intCategoryParentId";
+	static final String CATEGORY_IS_PRIVATE =			"bCategoryIsPrivate";
+	static final String CATEGORY_DELETE = 			"bCategoryDelete";
+	static final String CATEGORY_UPLOADED = 		"bCategoryUploaded";
+	
+	// Fields for TABLE_LOCATION_CATEGORY 
+	static final String LOCATION_CATEGORY_ID = 		"txtID";
+//	static final String CATEGORY_ID = 				"intCategoryId";
+//	static final String LOCATION_NAME_ID = 			"intLocationName";
+	static final String LOCATION_CATEGORY_UPLOADED ="bLocationCategoryUploaded";
+	
+	//Constructor
+	public DbManager(Context context){
+		super(context,DB_NAME,null,DB_VERSION);
+		BackupDatabaseFile();
+		}
+	
+	// Called only once, first time the DB is created
+	@Override
+	public void onCreate(SQLiteDatabase db){
+		Log.d(TAG, "onCreate started");
+
+		String sqlLocationName = "CREATE table " + TABLE_LOCATION_NAME + "(" + LOCATION_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ LOCATION_NAME + " text, "
+				+ LOCATION_NAME_IGNORE + " boolean, " + LOCATION_NAME_IS_PRIVATE + " boolean, " + LOCATION_NAME_DELETE + " boolean, " + LOCATION_NAME_UPLOADED + " boolean)";
+		db.execSQL(sqlLocationName);
+		Log.d(TAG, "onCreateed sql: " + sqlLocationName);
+		
+		String sqlLocation = "CREATE table " + TABLE_LOCATION + "(" + LOCATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LOCATION_NAME_ID + " int, "
+				+ LOCATION_LAT + " float, " + LOCATION_LONG + " float, "
+				+ LOCATION_ADDRESS_LINE_0 + " text, " + LOCATION_ADDRESS_LINE_1 + " text, " + LOCATION_ADDRESS_LINE_2 + " text, " + LOCATION_ADDRESS_LINE_3 + " text, "
+				+ LOCATION_PHONE + " text, "
+				+ LOCATION_IGNORE + " boolean, " + LOCATION_IS_PRIVATE + " boolean, " + LOCATION_DELETE + " boolean, " + LOCATION_UPLOADED + " boolean)";
+		db.execSQL(sqlLocation);
+		Log.d(TAG, "onCreateed sql: " + sqlLocation);
+		
+		String sqlTask = "CREATE table " + TABLE_TASK + "(" + TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TASK_NAME_ID + " int, " + TASK_PRIORITY + " int, "
+				+ TASK_START_DATE + " text, " + TASK_END_DATE +  " text, " + LOCATION_ID + " int, " + LOCATION_NAME_ID + " int, "
+				+ TASK_PARENT_ID + " INT, " + TASK_COMPLETE + " boolean" + TASK_COMPLETE_DATE + " text";
+		db.execSQL(sqlTask);
+		Log.d(TAG, "onCreateed sql: " + sqlTask);
+		
+		String sqlTaskName = "CREATE table " + TABLE_TASK_NAME + "(" + TASK_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + TASK_NAME + " text, "
+				+ CATEGORY_ID + " int, " + TASK_NAME_IS_PRIVATE + " boolean, " + TASK_NAME_DELETED + " boolean, " + TASK_NAME_UPLOADED + " boolean)";
+		db.execSQL(sqlTaskName);
+		Log.d(TAG, "onCreateed sql: " + sqlTaskName);
+		
+		
+		String sqlCategoy = "Create table " + TABLE_CATEGORY + "(" + CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + CATEGORY_NAME + " int, "
+				+ CATEGORY_PARENT_ID + " int, " + CATEGORY_IS_PRIVATE + " boolean, " + CATEGORY_DELETE + " boolean, " + CATEGORY_UPLOADED + " boolean)";
+		db.execSQL(sqlCategoy);
+		Log.d(TAG, "onCreateed sql: " + sqlCategoy);
+		
+		String sqlLocationDept = "CREATE table " + TABLE_LOCATION_CATEGORY + "(" + LOCATION_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+				+ LOCATION_NAME_ID + " int, " + CATEGORY_ID + " int)";
+		db.execSQL(sqlLocationDept);
+		Log.d(TAG, "onCreateed sql: " + sqlLocationDept);
+		Log.d(TAG, "onCreate finished");
+
+	}
+	
+	
+	//Called when newVersion != oldVersion
+	@Override
+	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
+		Log.d(TAG, "onUpdated started. Old version: " + oldVersion + ".  New version: " + newVersion);
+
+		switch(oldVersion){
+		case 2:
+			//TASK TABLE added CATEGORY ID field
+			db.execSQL("ALTER TABLE " + TABLE_TASK + " ADD COLUMN " + CATEGORY_ID + " int");
+		case 3:
+			//Location category table had an error with the a column name
+			db.execSQL("DROP TABLE " + TABLE_LOCATION_CATEGORY);
+			db.execSQL("CREATE table " + TABLE_LOCATION_CATEGORY + "(" + LOCATION_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ LOCATION_NAME_ID + " int, " + LOCATION_ID + " int)");
+		case 4:
+			//Lets try that again
+			db.execSQL("DROP TABLE " + TABLE_LOCATION_CATEGORY);
+			db.execSQL("CREATE table " + TABLE_LOCATION_CATEGORY + "(" + LOCATION_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ LOCATION_NAME_ID + " int, " + CATEGORY_ID + " int)");
+		case 5:
+			//add the address lines
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + LOCATION_ADDRESS_LINE_0 + " text");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + LOCATION_ADDRESS_LINE_1 + " text");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + LOCATION_ADDRESS_LINE_2 + " text");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + LOCATION_ADDRESS_LINE_3 + " text");
+		case 6:
+			//do nothing, testing the database backup
+		case 7:
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + LOCATION_PHONE + " text");
+		case 8:
+			db.execSQL("ALTER TABLE " + TABLE_TASK + " ADD COLUMN " + TASK_COMPLETE_DATE + " text");
+			db.execSQL("ALTER TABLE " + TABLE_CATEGORY + " ADD COLUMN " + CATEGORY_PARENT_ID + " int");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION_NAME + " ADD COLUMN " +  LOCATION_NAME_IS_PRIVATE + " boolean");
+			db.execSQL("ALTER TABLE " + TABLE_LOCATION + " ADD COLUMN " + LOCATION_IS_PRIVATE + " boolean");
+			db.execSQL("ALTER TABLE " + TABLE_TASK_NAME + " ADD COLUMN " + TASK_NAME_IS_PRIVATE + " boolean");
+			db.execSQL("ALTER TABLE " + TABLE_CATEGORY + " ADD COLUMN " + CATEGORY_IS_PRIVATE + " boolean");
+			
+		}
+		
+
+		Log.d(TAG, "onUpdated finished. Old version: " + oldVersion + ".  New version: " + newVersion);
+	}
+	
+	private Boolean BackupDatabaseFile(){
+		Boolean result = Boolean.FALSE;
+		try {
+			InputStream in = new FileInputStream(DB_NAME);
+			FileOutputStream out = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/external_sd/POI/backup.db");
+			byte[] buff = new byte[1024];
+			int read = 0;
+			try {
+				while ((read = in.read(buff)) > 0) {
+					out.write(buff, 0, read);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				} finally {
+					try {
+						in.close();
+						out.close();
+						result = Boolean.TRUE;
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+				}
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public ArrayList<TaskVO> loadTask(){
+		Log.d(TAG, "loadTasks started");
+		SQLiteDatabase myDatabase = this.getReadableDatabase();
+		
+		String sqlQuery = "SELECT " + TABLE_TASK + ".*, " + TABLE_TASK_NAME + ".*"
+				+ " FROM " +  TABLE_TASK + ", " + TABLE_TASK_NAME
+				+ " WHERE " + TABLE_TASK + "." + TASK_NAME_ID + " = " + TABLE_TASK_NAME + "." + TASK_NAME_ID
+				+ " ORDER BY " + TABLE_TASK + "." + TASK_PRIORITY + " DESC";
+		
+		Cursor cursor = myDatabase.rawQuery(sqlQuery, null);
+		
+		// integers to get each of the Column indexes
+		int id = cursor.getColumnIndex(TASK_ID);
+		int priority = cursor.getColumnIndex(TASK_PRIORITY);
+		int parentId = cursor.getColumnIndex(TASK_PARENT_ID);
+		int isComplete = cursor.getColumnIndex(TASK_COMPLETE);
+		int name = cursor.getColumnIndex(TASK_NAME);
+		int categoryId = cursor.getColumnIndex(CATEGORY_ID);
+
+		ArrayList<TaskVO> tasksArrayList = new ArrayList<TaskVO>();
+		TaskVO listTask;
+
+		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()){
+			
+			listTask = new TaskVO();
+			listTask.set_id(cursor.getLong(id));
+			listTask.set_priority(cursor.getInt(priority));
+			listTask.set_parentId(cursor.getLong(parentId));
+			listTask.set_isComplete(Boolean.parseBoolean(cursor.getString(isComplete)));
+			listTask.get_taskName().set_name(cursor.getString(name));
+			listTask.get_category().set_id(cursor.getLong(categoryId));
+			tasksArrayList.add(listTask);
+			
+		}
+		myDatabase.close();
+		Log.d(TAG, "loadTask finished");
+		return tasksArrayList;
+	}
+
+	
+	public Long writeRecord(TaskNameVO taskName){
+		ContentValues values = new ContentValues();
+		
+		String tableName = TABLE_TASK_NAME;
+		String criteriaColumn = TASK_NAME_ID;
+		values.put(TASK_NAME, taskName.get_name().toString());
+		values.put(CATEGORY_ID, taskName.get_id());
+		values.put(TASK_NAME_DELETED, Boolean.toString(taskName.is_isDeleted()));
+		values.put(TASK_NAME_IS_PRIVATE, Boolean.toString(taskName.is_isPrivate()));
+		values.put(TASK_NAME_UPLOADED, Boolean.FALSE);
+		return(insertOrUpdate(tableName, criteriaColumn, values, taskName.get_id()));
+		
+	}
+
+	public Long writeRecord(TaskVO task){
+		ContentValues values = new ContentValues();
+		
+		String tableName = TABLE_TASK;
+		String criteriaColumn = TASK_ID;
+		values.clear();
+		values.put(TASK_NAME_ID, task.get_taskName().get_id());
+		values.put(TASK_PRIORITY, task.get_priority());
+		values.put(TASK_START_DATE, task.get_startDateTime().toString());
+		values.put(TASK_END_DATE, task.get_endDateTime().toString());
+		values.put(LOCATION_NAME_ID, task.get_location().get_nameId());
+		values.put(LOCATION_ID, task.get_location().get_id());
+		values.put(CATEGORY_ID, task.get_category().get_id());
+		values.put(TASK_PARENT_ID, task.get_parentId());
+		values.put(TASK_COMPLETE_DATE, task.get_completionDate().toString());
+		values.put(TASK_COMPLETE, Boolean.toString(task.is_isComplete()));
+		return(insertOrUpdate(tableName, criteriaColumn, values, task.get_id()));
+	}
+	
+	public Long writeRecord(CategoryVO category){
+		ContentValues values = new ContentValues();
+		
+		String tableName = TABLE_CATEGORY;
+		String criteriaColumn = CATEGORY_ID;
+		values.put(CATEGORY_NAME, category.get_name().toString());
+		values.put(CATEGORY_PARENT_ID, category.get_parentId());
+		values.put(CATEGORY_IS_PRIVATE, Boolean.toString(category.is_isPrivate()));
+		values.put(CATEGORY_DELETE, Boolean.toString(category.is_isDeleted()));
+		values.put(CATEGORY_UPLOADED, Boolean.toString(category.is_isUploaded()));
+		return(insertOrUpdate(tableName, criteriaColumn, values, category.get_id()));
+	}
+	
+	public Long writeRecord(LocationVO location){
+		ContentValues values = new ContentValues();
+		
+		String tableName = TABLE_LOCATION;
+		String criteriaColumn = LOCATION_ID;
+		values.put(LOCATION_NAME_ID, location.get_nameId());
+		values.put(LOCATION_LAT, location.get_coordinate().get_latitude());
+		values.put(LOCATION_LONG, location.get_coordinate().get_longitude());
+		values.put(LOCATION_ADDRESS_LINE_0, location.get_address().getAddressLine(0));
+		values.put(LOCATION_ADDRESS_LINE_1, location.get_address().getAddressLine(1));
+		values.put(LOCATION_ADDRESS_LINE_2, location.get_address().getAddressLine(2));
+		values.put(LOCATION_ADDRESS_LINE_3, location.get_address().getAddressLine(3));
+		values.put(LOCATION_PHONE, location.get_address().getPhone());
+		values.put(LOCATION_IGNORE, Boolean.toString(location.is_ignore()));
+		values.put(LOCATION_DELETE, Boolean.toString(location.is_isDeleted()));
+		values.put(LOCATION_UPLOADED, Boolean.toString(location.is_isUploaded()));
+		return(insertOrUpdate(tableName, criteriaColumn, values, location.get_id()));
+	}
+	
+	private Long insertOrUpdate(String tableName, String criteriaColumn, ContentValues values, Long criteriaId){
+		SQLiteDatabase db = this.getWritableDatabase();
+		long i;
+		if (criteriaId==-1){
+			i = db.insertOrThrow(tableName, null, values);
+		} else {
+			i=criteriaId;
+			db.update(tableName, values, criteriaColumn + "=" + criteriaId, null);
+			Log.d(TAG, "record number " + String.valueOf(i));
+		}
+		db.close();
+		return i;
+	}
+	
+}

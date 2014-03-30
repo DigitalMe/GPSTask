@@ -1,0 +1,50 @@
+package com.kajun258456357159.gps.task.vo;
+
+import android.location.Location;
+
+public class CoordinateVO {
+	private double _lattitude;
+	private double _longitude;
+	
+	//constructor
+	public CoordinateVO(double lattitude, double longitude){
+		set_lattitude(lattitude);
+		set_longitude(longitude);
+	}
+	
+	public CoordinateVO(){
+		set_lattitude(0);
+		set_longitude(0);
+	}
+
+	public double get_lattitude() {
+		return _lattitude;
+	}
+
+	public void set_lattitude(double _lattitude) {
+		this._lattitude = _lattitude;
+	}
+
+	public double get_longitude() {
+		return _longitude;
+	}
+
+	public void set_longitude(double _longitude) {
+		this._longitude = _longitude;
+	}
+	public float getDistance(double lattitude, double longitude) {
+		Float distance = Float.valueOf(0);
+		Location location = new Location("");
+		location.setLatitude(get_lattitude());
+		location.setLongitude(get_longitude());
+		
+		Location locationHere = new Location("");
+		locationHere.setLatitude(lattitude);
+		locationHere.setLongitude(longitude);
+		
+		distance = locationHere.distanceTo(location);
+		
+		return distance;
+	}
+
+}

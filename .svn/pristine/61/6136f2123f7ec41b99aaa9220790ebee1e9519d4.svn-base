@@ -1,0 +1,48 @@
+package com.kajun258456357159.gps.task.model;
+
+import java.util.ArrayList;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.kajun258456357159.gps.task.vo.CategoryVO;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+import com.kajun258456357159.gps.task.vo.TaskVO;
+
+public class DbHelper {
+	static final String TAG = "DbHelper";
+	private DbManager dbMan;
+
+	//Constructor
+	public DbHelper(Context context){
+		}
+	
+
+	public void saveTask(TaskVO task){
+		//*****************************************
+		//use taskId to check for any related fields in Task Name table
+		//needs to check if there is a duplicate task name entry
+		//is so then change the details to the new task
+		//*****************************************
+
+		dbMan.writeRecord(task);
+	}
+	
+
+//	public ArrayList<CategoryVO> loadCategoryList(long locationNameId){
+//	}
+
+//	public ArrayList<LocationVO> loadLocationList(long locationNameId){
+//	}
+
+//	public ArrayList<LocationVO> loadLocationNameList(){
+//	}
+
+//	public ArrayList<Long> loadLocationNameCategories(Long locationId){
+//	}
+
+
+}

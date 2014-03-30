@@ -1,0 +1,88 @@
+package com.kajun258456357159.gps.task;
+
+import java.util.ArrayList;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.LinearLayout;
+
+import com.kajun258456357159.gps.task.R;
+import com.kajun258456357159.gps.task.IO.DataManager;
+import com.kajun258456357159.gps.task.layout.lists.LocationList;
+import com.kajun258456357159.gps.task.vo.LocationVO;
+
+public class LocationView extends Activity implements OnClickListener {
+	DataManager dataModel  = DataManager.getInstance();
+	public final static  String LOCATIONVIEW = "com.kajun258456357159.gps.task.LOCATIONVIEW";
+	public final static String ID = ".ID";
+	public final static String CATEGORYID = "CATEGORYID";
+	private final static String TAG = "LocationView";
+	private Intent intent;
+	private ArrayList<LocationVO> locationArrayList;
+	private long categoryId;
+	private LinearLayout layoutLocationList;
+	private LocationList locationList; 
+
+
+	
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_location_view);
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+
+		//get the task details
+		intent = getIntent();
+		
+		//load location details
+		categoryId = intent.getLongExtra(LOCATIONVIEW + CATEGORYID, 0);
+		locationArrayList = new ArrayList<LocationVO>(); 
+		ArrayList<LocationVO> dmLocationList = dataModel.getLocationList();
+		
+		for (int i = 0; i < dmLocationList.size(); i++)
+		{
+			if(dmLocationList.get(i).get_categoryId()== categoryId)
+			{
+				locationArrayList.add(dmLocationList.get(i));
+			}
+		}
+		//init the categoryList
+		layoutLocationList = (LinearLayout)findViewById(R.id.listLocations);
+
+	}
+
+	public void onResume(){
+		super.onResume();
+		Log.d(TAG, "onResume started");
+
+		//This builds the list of categories
+		
+		layoutLocationList.removeAllViews();
+		locationList = new LocationList(this);
+		locationList.set_locationArrayList(locationArrayList);
+		locationList.setClickable(Boolean.TRUE);
+		locationList.setOnClickListener(this);
+		layoutLocationList.addView(locationList.get_locationList(this));
+		Log.d(TAG, "onResume finished");
+		
+	}
+
+	
+	public void onClickLocationName(View v){
+//		Intent intent = new Intent(this, EditLocationNames.class);
+//		intent.putExtra(EditLocationNames.SELECTTOEDITLOCATIONNAME + EditLocationNames.ID, Long.valueOf(v.getId()));
+//		startActivity(intent);
+	}
+	
+	public void onClickLocationAddress(View v) {
+		
+	}
+
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		
+	}
+}

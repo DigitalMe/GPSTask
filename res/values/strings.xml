@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GPS Task</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">Tasks</string>
+
+    <!-- Strings for the Task List layout -->
+    <string name="editTasks_SearchAddTask">Add/Search for a task</string>
+    <string name="buttonTasks_AddTask">&#8230;</string>
+
+    <!-- Strings for the Edit Task layout -->
+    <string name="hintEditTask_TaskName">Type in the name of the task</string>
+    <string name="title_activity_edit_tasks">Edit Tasks</string>
+    <string name="textEditTask_TaskPriority">Priority</string>
+    <string name="textEditTask_TaskDeptSearch">Category to search for</string>
+    <string name="textEditTask_AddDept">&#8230;</string>
+    <string name="textEditTask_Save">Save</string>
+
+    <string-array name="priorities">
+        <item>Very Low Priority</item>
+        <item>Low Priority</item>
+        <item>Medium Priority</item>
+        <item>High Priority</item>
+        <item>Get It Done Now</item>
+    </string-array>
+    
+    <string-array name="priorityColors">
+        <item>BLUE</item>
+        <item>GREEN</item>
+        <item>#FFD700</item>
+        <item>#FF8C00</item>
+        <item>RED</item>
+    </string-array>
+    
+    
+    <!-- Strings for the select category layout -->
+    <string name ="title_activity_select_category">Select category</string>
+    <string name="selectCategory.categoryName.hint">Category search</string>
+    <string name="buttonSelectCategory_AddCategory">&#8230;</string>
+    
+    <!-- Strings for the Edit Category layout  -->
+    <string name="title_activity_edit_category">Edit Category</string>
+    <string name="editCategory.categoryName.hint">Type in the name of the category to add</string>
+    <string name ="editCategory.SaveCategory">Save</string>
+    <string name = "editCategory.toDelete">Delete this category?</string>
+    
+    <!-- Strings for the Location View -->
+    <string name ="title_activity_location_view">Location</string>
+    <string name="locationView_Name">Location Name</string>
+    <string name="locationView_Address">Address\nAddress line 2\nCity\nZZ, H0H 0H0</string>
+    
+    <!-- String for the Location Name List layout -->
+    <string name="title_activity_location_Name_List">Location Names</string>
+    <string name="listLocationNames.locationName.hint">Location name to add or edit</string>
+    <string name="listLocationNames_SaveLocation">Save</string>
+    <string name="editLocationNames_IsPrivate">Private</string>
+    <string name="editLocationNames_IsBoycotted">Boycott this place?</string>
+    
+    <!-- Strings for the Location Name Categories list layout -->
+    <string name="title_activity_edit_location_name_categories">Location Category Selection</string>
+    <string name="locationNameCategories_CategorySearch.hint">Category to search for</string>
+    <string name="locationNameCategories_Save">Save</string>
+    
+    <!-- Strings for the Location Name selection -->
+    <string name="title_activity_select_location_name">Select Location</string>
+    <string name="selectLocationName_LocationName.hint">Location Name Search</string>
+    
+    <!-- Strings for the Edit location layout -->
+    <string name="title_activity_edit_location">Edit Locations</string>
+        
+</resources>

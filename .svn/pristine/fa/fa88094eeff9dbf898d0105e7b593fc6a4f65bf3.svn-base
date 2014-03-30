@@ -1,0 +1,30 @@
+package com.kajun258456357159.gps.task;
+
+import android.app.Application;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.preference.PreferenceManager;
+
+public class GpsTaskApplication extends Application
+	implements OnSharedPreferenceChangeListener{
+	
+	private SharedPreferences _prefs;
+	
+	@Override
+	public  void onCreate(){
+		super.onCreate();
+		this._prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		this._prefs.registerOnSharedPreferenceChangeListener(this);
+	}
+	
+	@Override
+	public void onTerminate(){
+		
+	}
+	
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

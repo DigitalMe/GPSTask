@@ -1,0 +1,8 @@
+package com.kajun258456357159.gps.task.model;
+
+
+
+public class DbDoAll{
+	private static final String TAG = "DatabaseRequestService";
+
+}
